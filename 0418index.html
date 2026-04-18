@@ -101,9 +101,11 @@
           <div class="grid grid-cols-2 gap-4">
             
             <!-- 選項 1: 行李牌 -->
-            <div onclick="selectGift('皮革行李牌')" class="group cursor-pointer bg-black/30 border-2 border-white/20 hover:border-white rounded-2xl overflow-hidden transition-all transform hover:-translate-y-1">
+            <div id="cardLuggage" onclick="selectGift('皮革行李牌')" class="group cursor-pointer bg-black/30 border-2 border-white/20 hover:border-white rounded-2xl overflow-hidden transition-all transform hover:-translate-y-1 relative">
+              <div id="badgeLuggage" class="absolute top-2 right-2 z-10">
+                <!-- 剩餘標籤 (JS 動態插入) -->
+              </div>
               <div class="aspect-[3/4] bg-black/40 flex items-center justify-center relative">
-                <!-- 替換為網路 URL -->
                 <img src="https://img.shoplineapp.com/media/image_clips/69e39bb42454b85ce5655e9f/original.jpg?1776524212=&owner_id=66221c5c384dbb002ec45c18" alt="皮革行李牌" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" />
                 <div class="hidden absolute inset-0 flex flex-col items-center justify-center text-white/50">
                   <i data-lucide="luggage" class="w-10 h-10 mb-2"></i>
@@ -116,9 +118,11 @@
             </div>
 
             <!-- 選項 2: 卡夾 -->
-            <div onclick="selectGift('皮革卡夾')" class="group cursor-pointer bg-black/30 border-2 border-white/20 hover:border-white rounded-2xl overflow-hidden transition-all transform hover:-translate-y-1">
+            <div id="cardCardholder" onclick="selectGift('皮革卡夾')" class="group cursor-pointer bg-black/30 border-2 border-white/20 hover:border-white rounded-2xl overflow-hidden transition-all transform hover:-translate-y-1 relative">
+              <div id="badgeCardholder" class="absolute top-2 right-2 z-10">
+                <!-- 剩餘標籤 (JS 動態插入) -->
+              </div>
               <div class="aspect-[3/4] bg-black/40 flex items-center justify-center relative">
-                <!-- 替換為網路 URL -->
                 <img src="https://img.shoplineapp.com/media/image_clips/69e39bb099d2fa219d160b19/original.png?1776524208=&owner_id=66221c5c384dbb002ec45c18" alt="皮革卡夾" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" />
                 <div class="hidden absolute inset-0 flex flex-col items-center justify-center text-white/50">
                   <i data-lucide="credit-card" class="w-10 h-10 mb-2"></i>
@@ -143,7 +147,6 @@
           
           <div class="space-y-2">
             <label class="text-sm text-white/80 font-medium">請輸入要印製的文字 (中、英文皆可)</label>
-            <!-- 更新範例文字 -->
             <input type="text" id="inputText" placeholder="例如: 王大明 或 Mike Wang" class="w-full p-4 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-lg placeholder-white/50 shadow-inner" />
             <p class="text-xs text-white/70 mt-1">此文字將會印製在您選擇的 <strong id="displaySelectedGift" class="text-white drop-shadow-sm"></strong> 上</p>
           </div>
@@ -215,7 +218,7 @@
             <div id="displaySequence" class="text-6xl font-black text-white tracking-wider bg-black/20 py-4 rounded-2xl border border-white/20 shadow-inner">000</div>
           </div>
           <div class="bg-white/10 border border-white/20 p-4 rounded-xl text-white font-medium leading-relaxed backdrop-blur-sm">
-            登記已完成！<br>請憑此序號領取您的禮品
+            登記已完成！<br>請截圖此畫面於領取禮品時出示給工作人員兌換。
           </div>
           <button onclick="switchFrontView('home')" class="w-full py-4 bg-black/20 border border-white/20 text-white rounded-xl font-medium mt-4 hover:bg-black/30 transition">回首頁</button>
         </div>
@@ -263,7 +266,7 @@
             <i data-lucide="list" class="w-5 h-5"></i> 訂單管理
           </button>
           <button onclick="switchBackView('system')" id="btnBackSystem" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white">
-            <i data-lucide="settings" class="w-5 h-5"></i> 系統管理
+            <i data-lucide="settings" class="w-5 h-5"></i> 系統設定
         </button>
       </nav>
       <div class="p-4 border-t border-gray-800">
@@ -278,23 +281,44 @@
       <!-- Header -->
       <header class="bg-white/80 backdrop-blur-md shadow-sm border-b border-slate-200 px-8 py-5 flex justify-between items-center z-10 sticky top-0">
         <h2 id="backHeaderTitle" class="text-2xl font-bold text-slate-800 tracking-tight">訂單總覽</h2>
-        <div class="flex gap-6 text-sm">
+        <div class="flex gap-4 sm:gap-6 text-sm items-center">
+          
+          <div class="flex flex-col items-end hidden sm:flex">
+            <span class="text-slate-500 text-xs">行李牌 (已兌)</span>
+            <span id="statLuggage" class="font-bold text-blue-600 text-lg">0</span>
+          </div>
+          <div class="w-px h-6 bg-slate-200 hidden sm:block"></div>
+          
+          <div class="flex flex-col items-end hidden sm:flex">
+            <span class="text-slate-500 text-xs">卡夾 (已兌)</span>
+            <span id="statCardholder" class="font-bold text-purple-600 text-lg">0</span>
+          </div>
+          <div class="w-px h-10 bg-slate-200 hidden sm:block"></div>
+
           <div class="flex flex-col items-end">
-            <span class="text-slate-500 text-xs">目前總訂單</span>
+            <span class="text-slate-500 text-xs">總訂單</span>
             <span id="statTotalOrders" class="font-bold text-slate-800 text-lg">0</span>
           </div>
           <div class="w-px h-10 bg-slate-200"></div>
+
           <div class="flex flex-col items-end">
             <span class="text-slate-500 text-xs">下個流水號</span>
             <span id="statNextSeq" class="font-bold text-indigo-600 text-lg">#001</span>
           </div>
+
         </div>
       </header>
 
       <main class="flex-1 overflow-y-auto p-8">
         
-        <!-- 訂單管理分頁 -->
+        <!-- ================= 訂單管理分頁 ================= -->
         <div id="backOrdersView" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+            <div class="relative w-full max-w-sm">
+              <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+              <input type="text" id="backendSearchInput" onkeyup="window.renderOrdersTable()" placeholder="搜尋手機號碼、序號或印製文字..." class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm shadow-sm bg-white transition-all" />
+            </div>
+          </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse min-w-[800px]">
               <thead>
@@ -314,33 +338,70 @@
           </div>
         </div>
 
-        <!-- 系統管理分頁 -->
+        <!-- ================= 系統管理分頁 ================= -->
         <div id="backSystemView" class="hidden-view grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl">
-          <!-- 匯出區塊 -->
-          <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-            <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3"><i data-lucide="download" class="w-6 h-6 text-indigo-500"></i> 資料匯出</h3>
+          
+          <!-- 左側：資料匯出 & 庫存設定 -->
+          <div class="space-y-8">
             
-            <div class="space-y-4 text-slate-600 text-sm mb-6 leading-relaxed">
-              <p>匯出格式為標準 CSV 檔案，可直接使用 Excel 或 Google Sheets 開啟。</p>
-              <p>匯出的欄位包含：序號、手機號碼、選擇禮品、印製文字、狀態、備註、建立時間。</p>
+            <!-- 庫存設定區塊 -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+              <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3"><i data-lucide="package" class="w-6 h-6 text-indigo-500"></i> 庫存數量設定</h3>
+              <div class="space-y-4">
+                
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <div>
+                    <span class="block font-bold text-slate-700">皮革行李牌</span>
+                    <span id="statLuggageUsage" class="text-xs text-slate-500 mt-1">已兌換: 0</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="number" id="inputLimitLuggage" class="w-20 p-2 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-indigo-500 focus:outline-none" min="0">
+                    <span class="text-slate-500 text-sm">個</span>
+                  </div>
+                </div>
+                
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <div>
+                    <span class="block font-bold text-slate-700">皮革卡夾</span>
+                    <span id="statCardholderUsage" class="text-xs text-slate-500 mt-1">已兌換: 0</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="number" id="inputLimitCardholder" class="w-20 p-2 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-indigo-500 focus:outline-none" min="0">
+                    <span class="text-slate-500 text-sm">個</span>
+                  </div>
+                </div>
+
+                <button onclick="saveStockLimits()" class="w-full mt-2 bg-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition shadow-md flex items-center justify-center gap-2">
+                  <i data-lucide="save" class="w-4 h-4"></i> 儲存庫存設定
+                </button>
+              </div>
             </div>
-            
-            <button onclick="handleExportCSV()" class="w-full sm:w-auto bg-green-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition shadow-md shadow-green-600/20 flex items-center justify-center gap-2">
-              <i data-lucide="file-spreadsheet" class="w-5 h-5"></i> 下載最新訂單資料
-            </button>
+
+            <!-- 資料匯出區塊 -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+              <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3"><i data-lucide="download" class="w-6 h-6 text-green-600"></i> 資料匯出</h3>
+              <div class="space-y-4 text-slate-600 text-sm mb-6 leading-relaxed">
+                <p>匯出格式為標準 CSV 檔案，可直接使用 Excel 或 Google Sheets 開啟。</p>
+              </div>
+              <button onclick="handleExportCSV()" class="w-full bg-green-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition shadow-md flex items-center justify-center gap-2">
+                <i data-lucide="file-spreadsheet" class="w-5 h-5"></i> 下載最新訂單資料
+              </button>
+            </div>
+
           </div>
 
-          <!-- 危險操作區塊 -->
-          <div class="bg-white p-8 rounded-3xl shadow-sm border border-red-100">
+          <!-- 右側：危險操作區塊 -->
+          <div class="bg-white p-8 rounded-3xl shadow-sm border border-red-100 h-fit">
             <h3 class="text-xl font-bold text-red-600 mb-6 flex items-center gap-3"><i data-lucide="alert-triangle" class="w-6 h-6"></i> 系統危險操作</h3>
             <div class="bg-red-50 text-red-800 p-5 rounded-2xl text-sm mb-6 border border-red-100 leading-relaxed">
               <strong class="block text-red-900 text-base mb-1">⚠️ 警告：這是一項不可逆的操作</strong>
-              執行此操作將會<strong>徹底清空所有的訂單記錄</strong>，並將下一次的報名序號重新設定回 <strong>001</strong>。請確保您已匯出備份資料。
+              執行此操作將會<strong>徹底清空所有的訂單記錄</strong>，並將下一次的報名序號重新設定回 <strong>001</strong>。已扣除的庫存數量也會跟著釋放。請確保您已匯出備份資料。
             </div>
-            <button onclick="confirmReset()" class="bg-red-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-red-700 transition shadow-md shadow-red-600/20 flex items-center gap-2">
+            <button onclick="confirmReset()" class="w-full bg-red-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-red-700 transition shadow-md shadow-red-600/20 flex items-center justify-center gap-2">
               <i data-lucide="trash-2" class="w-4 h-4"></i> 確認一鍵重置系統
             </button>
           </div>
+          
         </div>
 
       </main>
@@ -351,12 +412,11 @@
   <!-- 應用程式邏輯 (Vanilla JS + Firebase Module)-->
   <!-- ========================================== -->
   <script type="module">
-    // 使用 ES Modules 載入 Firebase (v10 API)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    // --- Firebase 設定與初始化 ---
+    // --- Firebase 設定 ---
     const firebaseConfig = {
       apiKey: "AIzaSyBIYEIvocHJ02A4CHQq9jqIcnWuMrg3E2s",
       authDomain: "peysoncustomized.firebaseapp.com",
@@ -372,19 +432,19 @@
     const db = getFirestore(app);
     const appId = "peysoncustomized-app";
 
-    // --- 全域狀態 (State) ---
+    // --- 全域狀態 ---
     let orders = [];
     let sequenceCounter = 1;
     let currentEditNoteId = null;
+    
+    // 庫存與兌換數量設定
+    let sysConfig = { limitLuggage: 100, limitCardholder: 100 };
+    let validLuggageCount = 0;
+    let validCardholderCount = 0;
 
-    // 前台表單暫存資料
-    let orderDraft = {
-      gift: '',
-      text: '',
-      phone: ''
-    };
+    let orderDraft = { gift: '', text: '', phone: '' };
 
-    // --- 全域對話框模組 (Modal) ---
+    // --- 全域對話框模組 ---
     window.showModal = (title, message, type = 'alert', onConfirm = null) => {
       document.getElementById('modalTitle').innerText = title;
       document.getElementById('modalMessage').innerText = message;
@@ -433,36 +493,27 @@
       lucide.createIcons();
     };
 
-    // 密碼保護邏輯
+    // 密碼保護
     window.showExitPrompt = () => {
       document.getElementById('exitPasswordInput').value = '';
       document.getElementById('exitPasswordError').classList.add('hidden-view');
       document.getElementById('exitPromptModal').classList.remove('hidden-view');
     };
-
-    window.hideExitPrompt = () => {
-      document.getElementById('exitPromptModal').classList.add('hidden-view');
-    };
-
+    window.hideExitPrompt = () => document.getElementById('exitPromptModal').classList.add('hidden-view');
     window.verifyExitPassword = () => {
-      const pwd = document.getElementById('exitPasswordInput').value;
-      if (pwd === 'admin888') {
-        hideExitPrompt();
-        switchAppMode('backend');
+      if (document.getElementById('exitPasswordInput').value === 'admin888') {
+        hideExitPrompt(); switchAppMode('backend');
       } else {
         document.getElementById('exitPasswordError').classList.remove('hidden-view');
       }
     };
+    document.getElementById('exitPasswordInput').addEventListener('keypress', e => { if (e.key === 'Enter') verifyExitPassword(); });
 
-    document.getElementById('exitPasswordInput').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') verifyExitPassword();
-    });
-
+    // 前台分頁
     window.switchFrontView = (view) => {
       const views = ['frontHome', 'frontGift', 'frontText', 'frontPhone', 'frontConfirm', 'frontSuccess', 'frontStatus'];
       views.forEach(v => document.getElementById(v).classList.add('hidden-view'));
       
-      // 清空錯誤訊息
       document.getElementById('textError').classList.add('hidden-view');
       document.getElementById('phoneError').classList.add('hidden-view');
       document.getElementById('submitError').classList.add('hidden-view');
@@ -470,32 +521,26 @@
       document.getElementById('searchResultCard').classList.add('hidden-view');
       
       if (view === 'home') {
-        // 重置表單狀態
         orderDraft = { gift: '', text: '', phone: '' };
         document.getElementById('inputText').value = '';
         document.getElementById('inputPhone').value = '';
         document.getElementById('searchSeq').value = '';
       }
 
-      // 更新查詢進度畫面的數值
       const completed = orders.filter(o => o.status === '完成');
-      const lastCompleted = completed.length > 0 ? completed[completed.length - 1].sequenceId : '--';
-      document.getElementById('displayLastCompleted').innerText = lastCompleted;
+      document.getElementById('displayLastCompleted').innerText = completed.length > 0 ? completed[completed.length - 1].sequenceId : '--';
 
-      const targetId = 'front' + view.charAt(0).toUpperCase() + view.slice(1);
-      const targetEl = document.getElementById(targetId);
+      const targetEl = document.getElementById('front' + view.charAt(0).toUpperCase() + view.slice(1));
       if(targetEl) targetEl.classList.remove('hidden-view');
       lucide.createIcons();
     };
 
-    // 後台分頁切換
+    // 後台分頁
     window.switchBackView = (view) => {
       document.getElementById('backOrdersView').classList.add('hidden-view');
       document.getElementById('backSystemView').classList.add('hidden-view');
-      
       const btnOrders = document.getElementById('btnBackOrders');
       const btnSystem = document.getElementById('btnBackSystem');
-      
       btnOrders.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white";
       btnSystem.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white";
 
@@ -505,74 +550,118 @@
         btnOrders.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-indigo-600 text-white shadow-lg shadow-indigo-900/50";
       } else {
         document.getElementById('backSystemView').classList.remove('hidden-view');
-        document.getElementById('backHeaderTitle').innerText = '系統管理';
+        document.getElementById('backHeaderTitle').innerText = '系統設定';
         btnSystem.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-indigo-600 text-white shadow-lg shadow-indigo-900/50";
       }
       lucide.createIcons();
     };
 
-    // --- 前台表單流程邏輯 ---
+    // --- 前台與庫存控制 ---
     
-    // Step 1: 選擇禮品
+    // 更新庫存 UI 顯示 (前台標籤與後台數字)
+    window.updateInventoryUI = () => {
+      const remainLuggage = Math.max(0, sysConfig.limitLuggage - validLuggageCount);
+      const remainCardholder = Math.max(0, sysConfig.limitCardholder - validCardholderCount);
+
+      // 處理前台 行李牌 外觀
+      const elLug = document.getElementById('cardLuggage');
+      const badgeLug = document.getElementById('badgeLuggage');
+      if (remainLuggage <= 0) {
+        elLug.classList.add('opacity-50', 'grayscale');
+        elLug.classList.remove('hover:-translate-y-1', 'hover:border-white');
+        badgeLug.innerHTML = '<span class="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">已發完</span>';
+      } else {
+        elLug.classList.remove('opacity-50', 'grayscale');
+        elLug.classList.add('hover:-translate-y-1', 'hover:border-white');
+        badgeLug.innerHTML = ''; // 有庫存時不顯示剩餘數量標籤
+      }
+
+      // 處理前台 卡夾 外觀
+      const elCard = document.getElementById('cardCardholder');
+      const badgeCard = document.getElementById('badgeCardholder');
+      if (remainCardholder <= 0) {
+        elCard.classList.add('opacity-50', 'grayscale');
+        elCard.classList.remove('hover:-translate-y-1', 'hover:border-white');
+        badgeCard.innerHTML = '<span class="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">已發完</span>';
+      } else {
+        elCard.classList.remove('opacity-50', 'grayscale');
+        elCard.classList.add('hover:-translate-y-1', 'hover:border-white');
+        badgeCard.innerHTML = ''; // 有庫存時不顯示剩餘數量標籤
+      }
+
+      // 處理後台 統計與設定輸入框
+      document.getElementById('inputLimitLuggage').value = sysConfig.limitLuggage;
+      document.getElementById('inputLimitCardholder').value = sysConfig.limitCardholder;
+      document.getElementById('statLuggageUsage').innerText = `已兌換: ${validLuggageCount}`;
+      document.getElementById('statCardholderUsage').innerText = `已兌換: ${validCardholderCount}`;
+    };
+
+    // 點選禮品 (加入庫存檢查防呆)
     window.selectGift = (giftName) => {
+      const remainLuggage = sysConfig.limitLuggage - validLuggageCount;
+      const remainCardholder = sysConfig.limitCardholder - validCardholderCount;
+
+      if (giftName === '皮革行李牌' && remainLuggage <= 0) {
+        showModal('已發放完畢', '很抱歉，皮革行李牌的庫存已經被兌換完畢囉！');
+        return;
+      }
+      if (giftName === '皮革卡夾' && remainCardholder <= 0) {
+        showModal('已發放完畢', '很抱歉，皮革卡夾的庫存已經被兌換完畢囉！');
+        return;
+      }
+
       orderDraft.gift = giftName;
       document.getElementById('displaySelectedGift').innerText = giftName;
       switchFrontView('text');
     };
 
-    // Step 2: 驗證文字
     window.handleTextSubmit = () => {
       const text = document.getElementById('inputText').value.trim();
       const errBox = document.getElementById('textError');
       errBox.classList.add('hidden-view');
-
       if (!text) {
         errBox.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5"></i> 請輸入要印製的文字`;
-        errBox.classList.remove('hidden-view');
-        lucide.createIcons();
-        return;
+        errBox.classList.remove('hidden-view'); lucide.createIcons(); return;
       }
-
       orderDraft.text = text;
       switchFrontView('phone');
     };
 
-    // Step 3: 驗證手機號碼
     window.handlePhoneSubmit = () => {
       const phone = document.getElementById('inputPhone').value.trim();
       const errBox = document.getElementById('phoneError');
       errBox.classList.add('hidden-view');
-
       if (!phone) {
         errBox.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5"></i> 請輸入手機號碼`;
-        errBox.classList.remove('hidden-view');
-        lucide.createIcons();
-        return;
+        errBox.classList.remove('hidden-view'); lucide.createIcons(); return;
       }
-      
-      // 檢查是否已提交過
       const existingOrder = orders.find(o => o.phone === phone && o.status !== '取消');
       if (existingOrder) {
         errBox.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5"></i> 此號碼已登記過序號 (#${existingOrder.sequenceId})`;
-        errBox.classList.remove('hidden-view');
-        lucide.createIcons();
-        return;
+        errBox.classList.remove('hidden-view'); lucide.createIcons(); return;
       }
-
       orderDraft.phone = phone;
-      
-      // 準備顯示確認畫面
       document.getElementById('confirmGift').innerText = orderDraft.gift;
       document.getElementById('confirmText').innerText = orderDraft.text;
       document.getElementById('confirmPhone').innerText = orderDraft.phone;
-      
       switchFrontView('confirm');
     };
 
-    // Step 4: 送出訂單至 Firebase
     window.submitOrder = async () => {
       const errBox = document.getElementById('submitError');
       errBox.classList.add('hidden-view');
+      
+      // 送出前最後一次雙重確認庫存 (防併發)
+      const remainLuggage = sysConfig.limitLuggage - validLuggageCount;
+      const remainCardholder = sysConfig.limitCardholder - validCardholderCount;
+      if (orderDraft.gift === '皮革行李牌' && remainLuggage <= 0) {
+        errBox.innerText = '很抱歉，在您填寫期間行李牌已發放完畢，請重新選擇。';
+        errBox.classList.remove('hidden-view'); return;
+      }
+      if (orderDraft.gift === '皮革卡夾' && remainCardholder <= 0) {
+        errBox.innerText = '很抱歉，在您填寫期間卡夾已發放完畢，請重新選擇。';
+        errBox.classList.remove('hidden-view'); return;
+      }
 
       const seqStr = String(sequenceCounter).padStart(3, '0');
       const newOrder = {
@@ -597,26 +686,19 @@
       }
     };
 
-    // 查詢進度功能
     window.handleSearch = () => {
       const searchVal = document.getElementById('searchSeq').value.trim();
       const errBox = document.getElementById('searchError');
       const resultCard = document.getElementById('searchResultCard');
-      
-      errBox.classList.add('hidden-view');
-      resultCard.classList.add('hidden-view');
-
+      errBox.classList.add('hidden-view'); resultCard.classList.add('hidden-view');
       if(!searchVal) return;
-
       const order = orders.find(o => o.sequenceId === searchVal);
       if (order) {
         let statusHtml = '';
         if (order.status === '處理中') statusHtml = `<span class="bg-yellow-500/20 text-yellow-200 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 border border-yellow-500/50"><i data-lucide="clock" class="w-4 h-4"></i>處理中</span>`;
         if (order.status === '完成') statusHtml = `<span class="bg-green-500/20 text-green-200 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 border border-green-500/50"><i data-lucide="check-circle" class="w-4 h-4"></i>完成</span>`;
         if (order.status === '取消') statusHtml = `<span class="bg-red-500/20 text-red-200 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 border border-red-500/50"><i data-lucide="x-circle" class="w-4 h-4"></i>取消</span>`;
-
         const maskedPhone = order.phone.replace(/(\d{4})\d{3}(\d{3})/, '$1***$2');
-
         resultCard.innerHTML = `
           <div class="bg-black/40 px-4 py-3 border-b border-white/10 flex justify-between items-center">
             <span class="font-bold text-white drop-shadow-sm">序號 #${order.sequenceId}</span>
@@ -629,114 +711,95 @@
             <div class="flex justify-between"><span class="text-white/70">建立時間</span><span class="text-white/60">${order.createdAt}</span></div>
           </div>
         `;
-        resultCard.classList.remove('hidden-view');
-        lucide.createIcons();
+        resultCard.classList.remove('hidden-view'); lucide.createIcons();
       } else {
         errBox.innerText = '找不到此序號的訂單，請確認輸入是否正確';
         errBox.classList.remove('hidden-view');
       }
     };
 
-    // --- 後台邏輯 (Backend) ---
+    // --- 後台儲存與功能 ---
     
-    // 匯出 CSV
-    window.handleExportCSV = () => {
-      if(orders.length === 0) {
-        showModal('無法匯出', '目前系統中沒有任何訂單可以匯出。');
+    // 儲存庫存設定至 Firebase
+    window.saveStockLimits = async () => {
+      const valLug = parseInt(document.getElementById('inputLimitLuggage').value, 10);
+      const valCard = parseInt(document.getElementById('inputLimitCardholder').value, 10);
+      
+      if (isNaN(valLug) || isNaN(valCard) || valLug < 0 || valCard < 0) {
+        showModal('錯誤', '請輸入正確的數字上限。');
         return;
       }
-
-      const headers = ["序號", "手機號碼", "選擇禮品", "印製文字", "狀態", "備註", "建立時間"];
-      const rows = orders.map(o => [
-        o.sequenceId, 
-        o.phone, 
-        o.gift || '', 
-        o.customText || '', 
-        o.status, 
-        o.note || '', 
-        o.createdAt
-      ]);
-      const csvContent = "data:text/csv;charset=utf-8,\uFEFF" 
-        + headers.join(",") + "\n" 
-        + rows.map(e => e.map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")).join("\n");
       
+      try {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'system', 'config'), {
+          limitLuggage: valLug,
+          limitCardholder: valCard
+        }, { merge: true });
+        showModal('成功', '庫存設定已更新！');
+      } catch (err) {
+        console.error(err);
+        showModal('錯誤', '儲存失敗，請確認網路連線。');
+      }
+    };
+
+    window.handleExportCSV = () => {
+      if(orders.length === 0) { showModal('無法匯出', '目前沒有訂單。'); return; }
+      const headers = ["序號", "手機號碼", "選擇禮品", "印製文字", "狀態", "備註", "建立時間"];
+      const rows = orders.map(o => [o.sequenceId, o.phone, o.gift || '', o.customText || '', o.status, o.note || '', o.createdAt]);
+      const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(",") + "\n" + rows.map(e => e.map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")).join("\n");
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
       link.setAttribute("download", `活動訂單_${new Date().getTime()}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
     };
 
-    // 清空重置
     window.confirmReset = () => {
-      showModal('警告', '確定要清空所有訂單並將序號重置為 001 嗎？此操作無法還原！', 'confirm', async () => {
+      showModal('警告', '確定要清空所有訂單並重置嗎？', 'confirm', async () => {
         try {
-          // 在真實環境中若訂單極多，應該用批次刪除，這裡為求穩定採用迴圈
-          for (const order of orders) {
-            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', order.id));
-          }
+          for (const order of orders) { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', order.id)); }
           showModal('成功', '系統資料已成功重置。');
-        } catch(err) {
-          console.error(err);
-          showModal('錯誤', '重置發生異常，請檢查網路連線。');
-        }
+        } catch(err) { showModal('錯誤', '重置發生異常。'); }
       });
     };
 
-    // 表格操作 (委派事件)
     window.changeOrderStatus = async (id, newStatus) => {
       await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id), { status: newStatus });
     };
 
-    window.startEditNote = (id) => {
-      currentEditNoteId = id;
-      renderOrdersTable(); // 重新渲染以顯示輸入框
-    };
+    window.startEditNote = (id) => { currentEditNoteId = id; renderOrdersTable(); };
 
     window.saveOrderNote = async (id) => {
       const inputEl = document.getElementById(`noteInput-${id}`);
-      if(inputEl) {
-        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id), { note: inputEl.value });
-      }
+      if(inputEl) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id), { note: inputEl.value });
       currentEditNoteId = null;
     };
 
-    // 渲染表格內容
     const renderOrdersTable = () => {
       const tbody = document.getElementById('ordersTableBody');
+      const searchInput = document.getElementById('backendSearchInput');
+      const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
       const sortedOrders = [...orders].sort((a, b) => b.timestamp - a.timestamp);
+      
+      // 搜尋過濾邏輯
+      const filteredOrders = searchTerm 
+        ? sortedOrders.filter(o => o.sequenceId.includes(searchTerm) || o.phone.includes(searchTerm) || (o.customText && o.customText.toLowerCase().includes(searchTerm)))
+        : sortedOrders;
 
-      if (sortedOrders.length === 0) {
-        tbody.innerHTML = `<tr><td colSpan="6" class="p-12 text-center text-slate-400 font-medium">目前尚無任何訂單資料</td></tr>`;
-        return;
+      if (filteredOrders.length === 0) {
+        tbody.innerHTML = `<tr><td colSpan="6" class="p-12 text-center text-slate-400 font-medium">目前尚無任何訂單資料，或找不到符合的搜尋結果</td></tr>`; return;
       }
-
       let html = '';
-      sortedOrders.forEach(order => {
+      filteredOrders.forEach(order => {
         let selectClass = "px-4 py-2 rounded-xl text-sm font-bold border outline-none cursor-pointer appearance-none shadow-sm transition-all ";
         if(order.status === '處理中') selectClass += "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100";
         else if (order.status === '完成') selectClass += "bg-green-50 text-green-700 border-green-200 hover:bg-green-100";
         else selectClass += "bg-red-50 text-red-700 border-red-200 hover:bg-red-100";
         
-        let noteHtml = '';
-        if (currentEditNoteId === order.id) {
-           noteHtml = `
-            <div class="flex gap-2 items-center">
-              <input type="text" id="noteInput-${order.id}" class="border border-indigo-200 px-3 py-1.5 rounded-lg text-sm w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-inner" value="${order.note || ''}">
-              <button onclick="saveOrderNote('${order.id}')" class="text-xs bg-indigo-600 text-white px-3 py-2 rounded-lg font-bold shadow-sm hover:bg-indigo-700 transition">儲存</button>
-            </div>
-           `;
-        } else {
-           const noteContent = order.note ? order.note : `<span class="text-slate-400 italic">點擊新增備註...</span>`;
-           noteHtml = `
-            <div onclick="startEditNote('${order.id}')" class="flex items-center justify-between group-hover:bg-white p-2 -m-2 rounded-lg cursor-pointer transition-all border border-transparent group-hover:border-slate-200 group-hover:shadow-sm">
-              <span class="text-slate-600 text-sm truncate max-w-[150px]">${noteContent}</span>
-              <i data-lucide="edit-3" class="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors opacity-0 group-hover:opacity-100"></i>
-            </div>
-           `;
-        }
+        let noteHtml = currentEditNoteId === order.id ? 
+          `<div class="flex gap-2 items-center"><input type="text" id="noteInput-${order.id}" class="border border-indigo-200 px-3 py-1.5 rounded-lg text-sm w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-inner" value="${order.note || ''}"><button onclick="saveOrderNote('${order.id}')" class="text-xs bg-indigo-600 text-white px-3 py-2 rounded-lg font-bold shadow-sm hover:bg-indigo-700 transition">儲存</button></div>` : 
+          `<div onclick="startEditNote('${order.id}')" class="flex items-center justify-between group-hover:bg-white p-2 -m-2 rounded-lg cursor-pointer transition-all border border-transparent group-hover:border-slate-200 group-hover:shadow-sm"><span class="text-slate-600 text-sm truncate max-w-[150px]">${order.note || `<span class="text-slate-400 italic">點擊新增備註...</span>`}</span><i data-lucide="edit-3" class="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors opacity-0 group-hover:opacity-100"></i></div>`;
 
         html += `
           <tr class="border-b border-slate-100 hover:bg-indigo-50/50 transition-colors group">
@@ -744,43 +807,44 @@
             <td class="p-5 font-medium text-slate-800">${order.phone}</td>
             <td class="p-5 text-slate-600 font-medium">${order.gift || '-'}</td>
             <td class="p-5 text-blue-700 font-bold">${order.customText || '-'}</td>
-            <td class="p-5">
-              <select onchange="changeOrderStatus('${order.id}', this.value)" class="${selectClass}" style="background-image: url('data:image/svg+xml,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'none\\' viewBox=\\'0 0 20 20\\'%3e%3cpath stroke=\\'%236b7280\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M6 8l4 4 4-4\\'/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
-                <option value="處理中" ${order.status === '處理中' ? 'selected' : ''}>處理中</option>
-                <option value="完成" ${order.status === '完成' ? 'selected' : ''}>完成</option>
-                <option value="取消" ${order.status === '取消' ? 'selected' : ''}>取消 (解鎖)</option>
-              </select>
-            </td>
-            <td class="p-5">
-              ${noteHtml}
-            </td>
-          </tr>
-        `;
+            <td class="p-5"><select onchange="changeOrderStatus('${order.id}', this.value)" class="${selectClass}" style="background-image: url('data:image/svg+xml,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'none\\' viewBox=\\'0 0 20 20\\'%3e%3cpath stroke=\\'%236b7280\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M6 8l4 4 4-4\\'/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"><option value="處理中" ${order.status === '處理中' ? 'selected' : ''}>處理中</option><option value="完成" ${order.status === '完成' ? 'selected' : ''}>完成</option><option value="取消" ${order.status === '取消' ? 'selected' : ''}>取消 (解鎖)</option></select></td>
+            <td class="p-5">${noteHtml}</td>
+          </tr>`;
       });
-      tbody.innerHTML = html;
-      lucide.createIcons(); // 重新產生 icon
+      tbody.innerHTML = html; lucide.createIcons();
     };
+    window.renderOrdersTable = renderOrdersTable; // 綁定至全域提供給搜尋框使用
 
-
-    // --- 系統初始化與 Firebase 監聽 ---
+    // --- 系統初始化 ---
     const initApp = async () => {
-      try {
-        await signInAnonymously(auth);
-      } catch (error) {
-        console.error("Auth error:", error);
-      }
+      try { await signInAnonymously(auth); } catch (error) { console.error("Auth error:", error); }
 
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          // 隱藏載入畫面，直接顯示前端介面
           document.getElementById('loadingView').classList.add('hidden-view');
           switchAppMode('frontend');
 
-          // 監聽 Orders (已移除 Whitelist 邏輯)
+          // 1. 監聽系統庫存設定
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'system', 'config'), (docSnap) => {
+            if (docSnap.exists()) {
+              sysConfig = docSnap.data();
+            } else {
+              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'system', 'config'), sysConfig);
+            }
+            updateInventoryUI();
+          });
+
+          // 2. 監聽訂單變化 (計算已兌換數量)
           onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), (snapshot) => {
             orders = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             
-            // 更新狀態列與序號計數器
+            const validOrders = orders.filter(o => o.status !== '取消');
+            validLuggageCount = validOrders.filter(o => o.gift === '皮革行李牌').length;
+            validCardholderCount = validOrders.filter(o => o.gift === '皮革卡夾').length;
+
+            document.getElementById('statLuggage').innerText = validLuggageCount;
+            document.getElementById('statCardholder').innerText = validCardholderCount;
+            
             if (orders.length > 0) {
               const maxSeq = Math.max(...orders.map(o => parseInt(o.sequenceId, 10)));
               sequenceCounter = maxSeq + 1;
@@ -790,14 +854,13 @@
             document.getElementById('statTotalOrders').innerText = orders.length;
             document.getElementById('statNextSeq').innerText = '#' + String(sequenceCounter).padStart(3, '0');
             
-            // 如果目前在後台，重新渲染表格
+            updateInventoryUI();
             renderOrdersTable();
           });
         }
       });
     };
 
-    // 啟動應用程式
     lucide.createIcons();
     initApp();
 
