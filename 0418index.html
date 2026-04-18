@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>活動兌獎系統</title>
+  
+  <!-- 載入 Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 載入 Lucide Icons (CDN) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* 自訂動畫與淡入效果 */
+    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .hidden-view { display: none !important; }
+    
+    /* 隱藏原生卷軸以美化畫面 */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 antialiased overflow-x-hidden">
+
+  <!-- ========================================== -->
+  <!-- 載入中畫面 (Loading)                       -->
+  <!-- ========================================== -->
+  <div id="loadingView" class="min-h-screen flex items-center justify-center bg-gray-50 fixed inset-0 z-[150]">
+    <div class="text-indigo-600 font-bold text-xl flex flex-col items-center gap-4">
+      <i data-lucide="refresh-cw" class="w-8 h-8 animate-spin"></i>
+      正在連線至 Firebase 雲端系統...
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 全域提示彈窗 (Custom Modal)                -->
+  <!-- ========================================== -->
+  <div id="customModal" class="hidden-view fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center transform transition-all animate-fade-in">
+      <h3 id="modalTitle" class="text-xl font-bold text-slate-800 mb-2">提示</h3>
+      <p id="modalMessage" class="text-slate-600 mb-6"></p>
+      <div id="modalButtons" class="flex gap-3 justify-center">
+         <!-- 按鈕將透過 JS 動態產生 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 前台畫面 (Frontend)                        -->
+  <!-- ========================================== -->
+  <div id="frontendView" class="hidden-view min-h-screen flex items-center justify-center text-white bg-gradient-to-br from-red-600 to-orange-500">
+    <div class="w-full max-w-md h-screen sm:h-[85vh] bg-black/20 backdrop-blur-xl border border-white/20 sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
+      
+      <!-- Header -->
+      <div class="bg-black/20 text-white p-4 flex justify-between items-center shadow-md z-10 border-b border-white/10">
+        <div class="w-8"></div>
+        <h1 class="text-lg font-bold tracking-widest">活動兌獎</h1>
+        <button onclick="showExitPrompt()" class="w-8 flex justify-end text-white/60 hover:text-white transition">
+          <i data-lucide="settings" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- 後台登入：密碼彈出視窗 -->
+      <div id="exitPromptModal" class="hidden-view absolute inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl animate-fade-in">
+          <h3 class="text-xl font-bold text-white text-center mb-4">系統管理員登入</h3>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">請輸入管理員密碼</label>
+            <input type="password" id="exitPasswordInput" placeholder="輸入密碼" class="w-full p-3 bg-gray-900 border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+          </div>
+          <p id="exitPasswordError" class="text-red-500 text-sm hidden-view">密碼錯誤</p>
+          <div class="flex gap-3 mt-6">
+            <button onclick="hideExitPrompt()" class="flex-1 py-3 bg-gray-700 text-gray-300 rounded-xl font-medium hover:bg-gray-600 transition">取消</button>
+            <button onclick="verifyExitPassword()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium shadow-md hover:bg-blue-700 transition">確認登入</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-6 flex flex-col justify-center relative">
+        
+        <!-- ================== 前台首頁 ================== -->
+        <div id="frontHome" class="space-y-6 animate-fade-in">
+          <div class="text-center">
+            <i data-lucide="gift" class="w-16 h-16 mx-auto text-white mb-4 drop-shadow-md"></i>
+            <h2 class="text-2xl font-bold text-white drop-shadow-md">活動禮品兌換</h2>
+            <p class="text-white/80 mt-2 text-sm drop-shadow-sm">專屬客製化紀念品登記</p>
+          </div>
+          <button onclick="switchFrontView('gift')" class="w-full py-4 bg-white text-red-600 hover:bg-gray-100 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105">開始兌換</button>
+          <button onclick="switchFrontView('status')" class="w-full py-4 bg-black/20 hover:bg-black/30 text-white rounded-xl font-semibold text-lg shadow transition transform hover:scale-105 border border-white/20">查詢進度</button>
+        </div>
+
+        <!-- ================== 1. 禮品二選一 ================== -->
+        <div id="frontGift" class="hidden-view space-y-6 animate-fade-in">
+          <h2 class="text-xl font-bold text-white border-b border-white/20 pb-2 drop-shadow-md">請選擇您的禮品</h2>
+          <div class="grid grid-cols-2 gap-4">
+            
+            <!-- 選項 1: 行李牌 -->
+            <div onclick="selectGift('皮革行李牌')" class="group cursor-pointer bg-black/30 border-2 border-white/20 hover:border-white rounded-2xl overflow-hidden transition-all transform hover:-translate-y-1">
+              <div class="aspect-[3/4] bg-black/40 flex items-center justify-center relative">
+                <!-- 替換為網路 URL -->
+                <img src="https://img.shoplineapp.com/media/image_clips/69e39bb42454b85ce5655e9f/original.jpg?1776524212=&owner_id=66221c5c384dbb002ec45c18" alt="皮革行李牌" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" />
+                <div class="hidden absolute inset-0 flex flex-col items-center justify-center text-white/50">
+                  <i data-lucide="luggage" class="w-10 h-10 mb-2"></i>
+                  <span class="text-xs">圖片載入失敗</span>
+                </div>
+              </div>
+              <div class="p-3 text-center bg-black/40 group-hover:bg-white/20 transition-colors">
+                <span class="font-bold text-sm text-white drop-shadow-sm">皮革行李牌</span>
+              </div>
+            </div>
+
+            <!-- 選項 2: 卡夾 -->
+            <div onclick="selectGift('皮革卡夾')" class="group cursor-pointer bg-black/30 border-2 border-white/20 hover:border-white rounded-2xl overflow-hidden transition-all transform hover:-translate-y-1">
+              <div class="aspect-[3/4] bg-black/40 flex items-center justify-center relative">
+                <!-- 替換為網路 URL -->
+                <img src="https://img.shoplineapp.com/media/image_clips/69e39bb099d2fa219d160b19/original.png?1776524208=&owner_id=66221c5c384dbb002ec45c18" alt="皮革卡夾" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" />
+                <div class="hidden absolute inset-0 flex flex-col items-center justify-center text-white/50">
+                  <i data-lucide="credit-card" class="w-10 h-10 mb-2"></i>
+                  <span class="text-xs">圖片載入失敗</span>
+                </div>
+              </div>
+              <div class="p-3 text-center bg-black/40 group-hover:bg-white/20 transition-colors">
+                <span class="font-bold text-sm text-white drop-shadow-sm">皮革卡夾</span>
+              </div>
+            </div>
+
+          </div>
+          <button onclick="switchFrontView('home')" class="w-full py-3 bg-black/20 text-white/90 border border-white/20 hover:bg-black/30 rounded-xl font-medium mt-4 transition">返回</button>
+        </div>
+
+        <!-- ================== 2. 客製化文字 ================== -->
+        <div id="frontText" class="hidden-view space-y-6 animate-fade-in">
+          <div class="flex items-center gap-3 text-white mb-2 drop-shadow-md">
+            <i data-lucide="pen-tool" class="w-6 h-6"></i>
+            <h2 class="text-xl font-bold">客製化文字</h2>
+          </div>
+          
+          <div class="space-y-2">
+            <label class="text-sm text-white/80 font-medium">請輸入要印製的文字 (中、英文皆可)</label>
+            <!-- 更新範例文字 -->
+            <input type="text" id="inputText" placeholder="例如: 王大明 或 Mike Wang" class="w-full p-4 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-lg placeholder-white/50 shadow-inner" />
+            <p class="text-xs text-white/70 mt-1">此文字將會印製在您選擇的 <strong id="displaySelectedGift" class="text-white drop-shadow-sm"></strong> 上</p>
+          </div>
+          
+          <div id="textError" class="hidden-view p-3 bg-black/40 border border-red-400 text-red-200 rounded-lg flex items-center gap-2 text-sm"></div>
+          
+          <div class="flex gap-3 pt-4">
+            <button onclick="switchFrontView('gift')" class="flex-1 py-3 bg-black/20 text-white/90 border border-white/20 hover:bg-black/30 rounded-xl font-medium transition">上一步</button>
+            <button onclick="handleTextSubmit()" class="flex-1 py-3 bg-white text-red-600 hover:bg-gray-100 rounded-xl font-bold shadow-md transition">下一步</button>
+          </div>
+        </div>
+
+        <!-- ================== 3. 手機號碼 ================== -->
+        <div id="frontPhone" class="hidden-view space-y-6 animate-fade-in">
+          <div class="flex items-center gap-3 text-white mb-2 drop-shadow-md">
+            <i data-lucide="phone" class="w-6 h-6"></i>
+            <h2 class="text-xl font-bold">聯絡資訊</h2>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm text-white/80 font-medium">請輸入您的手機號碼</label>
+            <input type="tel" id="inputPhone" placeholder="例如: 0912345678" class="w-full p-4 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-lg placeholder-white/50 shadow-inner" />
+            <p class="text-xs text-white/70 mt-1">僅作為此活動有需要時聯繫使用</p>
+          </div>
+          
+          <div id="phoneError" class="hidden-view p-3 bg-black/40 border border-red-400 text-red-200 rounded-lg flex items-center gap-2 text-sm"></div>
+          
+          <div class="flex gap-3 pt-4">
+            <button onclick="switchFrontView('text')" class="flex-1 py-3 bg-black/20 text-white/90 border border-white/20 hover:bg-black/30 rounded-xl font-medium transition">上一步</button>
+            <button onclick="handlePhoneSubmit()" class="flex-1 py-3 bg-white text-red-600 hover:bg-gray-100 rounded-xl font-bold shadow-md transition">下一步</button>
+          </div>
+        </div>
+
+        <!-- ================== 4. 最後確認 ================== -->
+        <div id="frontConfirm" class="hidden-view space-y-6 animate-fade-in">
+          <h2 class="text-xl font-bold text-white border-b border-white/20 pb-2 text-center drop-shadow-md">請確認您的訂單資訊</h2>
+          
+          <div class="bg-black/30 rounded-2xl p-6 space-y-4 border border-white/20 shadow-inner">
+            <div>
+              <span class="block text-xs text-white/60 mb-1">禮品項目</span>
+              <div class="font-bold text-lg text-white flex items-center gap-2">
+                <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                <span id="confirmGift">--</span>
+              </div>
+            </div>
+            <div class="border-t border-white/10 pt-4">
+              <span class="block text-xs text-white/60 mb-1">印製文字</span>
+              <div class="font-bold text-xl text-white" id="confirmText">--</div>
+            </div>
+            <div class="border-t border-white/10 pt-4">
+              <span class="block text-xs text-white/60 mb-1">聯絡手機</span>
+              <div class="font-medium text-white/90 tracking-wider" id="confirmPhone">--</div>
+            </div>
+          </div>
+
+          <div id="submitError" class="hidden-view p-3 bg-black/40 border border-red-400 text-red-200 rounded-lg text-sm text-center"></div>
+
+          <div class="flex gap-3 pt-2">
+            <button onclick="switchFrontView('phone')" class="flex-1 py-4 bg-black/20 text-white/90 border border-white/20 hover:bg-black/30 rounded-xl font-medium transition">修改資料</button>
+            <button onclick="submitOrder()" class="flex-1 py-4 bg-white text-red-600 hover:bg-gray-100 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105">確認送出</button>
+          </div>
+        </div>
+
+        <!-- ================== 5. 成功畫面 ================== -->
+        <div id="frontSuccess" class="hidden-view space-y-8 text-center animate-fade-in py-8">
+          <i data-lucide="check-circle" class="w-24 h-24 mx-auto text-white drop-shadow-lg mb-4"></i>
+          <div>
+            <p class="text-white/80 font-medium mb-1 drop-shadow-sm">您的專屬序號</p>
+            <div id="displaySequence" class="text-6xl font-black text-white tracking-wider bg-black/20 py-4 rounded-2xl border border-white/20 shadow-inner">000</div>
+          </div>
+          <div class="bg-white/10 border border-white/20 p-4 rounded-xl text-white font-medium leading-relaxed backdrop-blur-sm">
+            登記已完成！<br>請憑此序號領取您的禮品
+          </div>
+          <button onclick="switchFrontView('home')" class="w-full py-4 bg-black/20 border border-white/20 text-white rounded-xl font-medium mt-4 hover:bg-black/30 transition">回首頁</button>
+        </div>
+
+        <!-- ================== 查詢進度 ================== -->
+        <div id="frontStatus" class="hidden-view space-y-6 animate-fade-in">
+          <h2 class="text-2xl font-bold text-white border-b border-white/20 pb-2 drop-shadow-md">查詢進度</h2>
+          
+          <div class="bg-black/20 p-4 rounded-xl border border-white/20 text-center shadow-inner">
+            <p class="text-white/70 text-sm mb-1">目前最新完成序號</p>
+            <p id="displayLastCompleted" class="text-3xl font-black text-white drop-shadow-md">--</p>
+          </div>
+
+          <div class="flex gap-2">
+            <input type="text" id="searchSeq" placeholder="請輸入 3 碼序號 (如 001)" class="flex-1 p-4 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none placeholder-white/50 shadow-inner" />
+            <button onclick="handleSearch()" class="px-6 bg-white text-red-600 rounded-xl flex items-center justify-center hover:bg-gray-100 transition shadow-md">
+              <i data-lucide="search" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <div id="searchError" class="hidden-view p-3 bg-black/40 border border-red-400 text-red-200 rounded-lg text-sm"></div>
+          
+          <div id="searchResultCard" class="hidden-view mt-6 bg-black/30 border border-white/20 rounded-2xl shadow-sm overflow-hidden">
+             <!-- Javascript 動態插入查詢結果 -->
+          </div>
+          
+          <button onclick="switchFrontView('home')" class="w-full py-4 bg-black/20 hover:bg-black/30 text-white border border-white/20 rounded-xl font-medium mt-6 transition">返回首頁</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 後台主畫面 (Backend Dashboard)             -->
+  <!-- ========================================== -->
+  <div id="backendView" class="hidden-view min-h-screen bg-gray-100 flex">
+    <!-- Sidebar -->
+    <div class="w-64 bg-gray-900 text-white flex flex-col shadow-xl z-20">
+      <div class="p-6 border-b border-gray-800">
+        <h1 class="text-xl font-black tracking-wider text-blue-400">系統管理後台</h1>
+        <p class="text-xs text-gray-500 mt-2">Desktop Manager</p>
+      </div>
+      <nav class="flex-1 p-4 space-y-2">
+          <button onclick="switchBackView('orders')" id="btnBackOrders" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-indigo-600 text-white shadow-lg shadow-indigo-900/50">
+            <i data-lucide="list" class="w-5 h-5"></i> 訂單管理
+          </button>
+          <button onclick="switchBackView('system')" id="btnBackSystem" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white">
+            <i data-lucide="settings" class="w-5 h-5"></i> 系統管理
+        </button>
+      </nav>
+      <div class="p-4 border-t border-gray-800">
+        <button onclick="switchAppMode('frontend')" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 transition">
+          <i data-lucide="log-out" class="w-4 h-4"></i> 回前台
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+      <!-- Header -->
+      <header class="bg-white/80 backdrop-blur-md shadow-sm border-b border-slate-200 px-8 py-5 flex justify-between items-center z-10 sticky top-0">
+        <h2 id="backHeaderTitle" class="text-2xl font-bold text-slate-800 tracking-tight">訂單總覽</h2>
+        <div class="flex gap-6 text-sm">
+          <div class="flex flex-col items-end">
+            <span class="text-slate-500 text-xs">目前總訂單</span>
+            <span id="statTotalOrders" class="font-bold text-slate-800 text-lg">0</span>
+          </div>
+          <div class="w-px h-10 bg-slate-200"></div>
+          <div class="flex flex-col items-end">
+            <span class="text-slate-500 text-xs">下個流水號</span>
+            <span id="statNextSeq" class="font-bold text-indigo-600 text-lg">#001</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 overflow-y-auto p-8">
+        
+        <!-- 訂單管理分頁 -->
+        <div id="backOrdersView" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 text-sm tracking-wide">
+                  <th class="p-5 font-semibold w-24">序號</th>
+                  <th class="p-5 font-semibold">手機號碼</th>
+                  <th class="p-5 font-semibold">選擇禮品</th>
+                  <th class="p-5 font-semibold text-blue-600">印製文字</th>
+                  <th class="p-5 font-semibold w-40">狀態</th>
+                  <th class="p-5 font-semibold">備註</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody">
+                <!-- Javascript 動態產生表格內容 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 系統管理分頁 -->
+        <div id="backSystemView" class="hidden-view grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl">
+          <!-- 匯出區塊 -->
+          <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+            <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3"><i data-lucide="download" class="w-6 h-6 text-indigo-500"></i> 資料匯出</h3>
+            
+            <div class="space-y-4 text-slate-600 text-sm mb-6 leading-relaxed">
+              <p>匯出格式為標準 CSV 檔案，可直接使用 Excel 或 Google Sheets 開啟。</p>
+              <p>匯出的欄位包含：序號、手機號碼、選擇禮品、印製文字、狀態、備註、建立時間。</p>
+            </div>
+            
+            <button onclick="handleExportCSV()" class="w-full sm:w-auto bg-green-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition shadow-md shadow-green-600/20 flex items-center justify-center gap-2">
+              <i data-lucide="file-spreadsheet" class="w-5 h-5"></i> 下載最新訂單資料
+            </button>
+          </div>
+
+          <!-- 危險操作區塊 -->
+          <div class="bg-white p-8 rounded-3xl shadow-sm border border-red-100">
+            <h3 class="text-xl font-bold text-red-600 mb-6 flex items-center gap-3"><i data-lucide="alert-triangle" class="w-6 h-6"></i> 系統危險操作</h3>
+            <div class="bg-red-50 text-red-800 p-5 rounded-2xl text-sm mb-6 border border-red-100 leading-relaxed">
+              <strong class="block text-red-900 text-base mb-1">⚠️ 警告：這是一項不可逆的操作</strong>
+              執行此操作將會<strong>徹底清空所有的訂單記錄</strong>，並將下一次的報名序號重新設定回 <strong>001</strong>。請確保您已匯出備份資料。
+            </div>
+            <button onclick="confirmReset()" class="bg-red-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-red-700 transition shadow-md shadow-red-600/20 flex items-center gap-2">
+              <i data-lucide="trash-2" class="w-4 h-4"></i> 確認一鍵重置系統
+            </button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 應用程式邏輯 (Vanilla JS + Firebase Module)-->
+  <!-- ========================================== -->
+  <script type="module">
+    // 使用 ES Modules 載入 Firebase (v10 API)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    // --- Firebase 設定與初始化 ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBIYEIvocHJ02A4CHQq9jqIcnWuMrg3E2s",
+      authDomain: "peysoncustomized.firebaseapp.com",
+      projectId: "peysoncustomized",
+      storageBucket: "peysoncustomized.firebasestorage.app",
+      messagingSenderId: "24334519651",
+      appId: "1:24334519651:web:9a4b1e33422b8bf7dc1756",
+      measurementId: "G-ZEWFSS2LZK"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const appId = "peysoncustomized-app";
+
+    // --- 全域狀態 (State) ---
+    let orders = [];
+    let sequenceCounter = 1;
+    let currentEditNoteId = null;
+
+    // 前台表單暫存資料
+    let orderDraft = {
+      gift: '',
+      text: '',
+      phone: ''
+    };
+
+    // --- 全域對話框模組 (Modal) ---
+    window.showModal = (title, message, type = 'alert', onConfirm = null) => {
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalMessage').innerText = message;
+      const btnContainer = document.getElementById('modalButtons');
+      btnContainer.innerHTML = '';
+      
+      if (type === 'confirm') {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition';
+        cancelBtn.innerText = '取消';
+        cancelBtn.onclick = () => document.getElementById('customModal').classList.add('hidden-view');
+        
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'flex-1 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition shadow-md';
+        confirmBtn.innerText = '確定執行';
+        confirmBtn.onclick = () => {
+          document.getElementById('customModal').classList.add('hidden-view');
+          if(onConfirm) onConfirm();
+        };
+        btnContainer.appendChild(cancelBtn);
+        btnContainer.appendChild(confirmBtn);
+      } else {
+        const okBtn = document.createElement('button');
+        okBtn.className = 'w-full py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-md';
+        okBtn.innerText = '我知道了';
+        okBtn.onclick = () => document.getElementById('customModal').classList.add('hidden-view');
+        btnContainer.appendChild(okBtn);
+      }
+      
+      document.getElementById('customModal').classList.remove('hidden-view');
+    };
+
+    // --- 畫面切換控制 ---
+    window.switchAppMode = (mode) => {
+      document.getElementById('frontendView').classList.add('hidden-view');
+      document.getElementById('backendView').classList.add('hidden-view');
+
+      if (mode === 'frontend') {
+        document.getElementById('frontendView').classList.remove('hidden-view');
+        switchFrontView('home');
+      }
+      if (mode === 'backend') {
+        document.getElementById('backendView').classList.remove('hidden-view');
+        switchBackView('orders'); 
+      }
+      lucide.createIcons();
+    };
+
+    // 密碼保護邏輯
+    window.showExitPrompt = () => {
+      document.getElementById('exitPasswordInput').value = '';
+      document.getElementById('exitPasswordError').classList.add('hidden-view');
+      document.getElementById('exitPromptModal').classList.remove('hidden-view');
+    };
+
+    window.hideExitPrompt = () => {
+      document.getElementById('exitPromptModal').classList.add('hidden-view');
+    };
+
+    window.verifyExitPassword = () => {
+      const pwd = document.getElementById('exitPasswordInput').value;
+      if (pwd === 'admin888') {
+        hideExitPrompt();
+        switchAppMode('backend');
+      } else {
+        document.getElementById('exitPasswordError').classList.remove('hidden-view');
+      }
+    };
+
+    document.getElementById('exitPasswordInput').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') verifyExitPassword();
+    });
+
+    window.switchFrontView = (view) => {
+      const views = ['frontHome', 'frontGift', 'frontText', 'frontPhone', 'frontConfirm', 'frontSuccess', 'frontStatus'];
+      views.forEach(v => document.getElementById(v).classList.add('hidden-view'));
+      
+      // 清空錯誤訊息
+      document.getElementById('textError').classList.add('hidden-view');
+      document.getElementById('phoneError').classList.add('hidden-view');
+      document.getElementById('submitError').classList.add('hidden-view');
+      document.getElementById('searchError').classList.add('hidden-view');
+      document.getElementById('searchResultCard').classList.add('hidden-view');
+      
+      if (view === 'home') {
+        // 重置表單狀態
+        orderDraft = { gift: '', text: '', phone: '' };
+        document.getElementById('inputText').value = '';
+        document.getElementById('inputPhone').value = '';
+        document.getElementById('searchSeq').value = '';
+      }
+
+      // 更新查詢進度畫面的數值
+      const completed = orders.filter(o => o.status === '完成');
+      const lastCompleted = completed.length > 0 ? completed[completed.length - 1].sequenceId : '--';
+      document.getElementById('displayLastCompleted').innerText = lastCompleted;
+
+      const targetId = 'front' + view.charAt(0).toUpperCase() + view.slice(1);
+      const targetEl = document.getElementById(targetId);
+      if(targetEl) targetEl.classList.remove('hidden-view');
+      lucide.createIcons();
+    };
+
+    // 後台分頁切換
+    window.switchBackView = (view) => {
+      document.getElementById('backOrdersView').classList.add('hidden-view');
+      document.getElementById('backSystemView').classList.add('hidden-view');
+      
+      const btnOrders = document.getElementById('btnBackOrders');
+      const btnSystem = document.getElementById('btnBackSystem');
+      
+      btnOrders.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white";
+      btnSystem.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white";
+
+      if(view === 'orders') {
+        document.getElementById('backOrdersView').classList.remove('hidden-view');
+        document.getElementById('backHeaderTitle').innerText = '訂單總覽';
+        btnOrders.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-indigo-600 text-white shadow-lg shadow-indigo-900/50";
+      } else {
+        document.getElementById('backSystemView').classList.remove('hidden-view');
+        document.getElementById('backHeaderTitle').innerText = '系統管理';
+        btnSystem.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-indigo-600 text-white shadow-lg shadow-indigo-900/50";
+      }
+      lucide.createIcons();
+    };
+
+    // --- 前台表單流程邏輯 ---
+    
+    // Step 1: 選擇禮品
+    window.selectGift = (giftName) => {
+      orderDraft.gift = giftName;
+      document.getElementById('displaySelectedGift').innerText = giftName;
+      switchFrontView('text');
+    };
+
+    // Step 2: 驗證文字
+    window.handleTextSubmit = () => {
+      const text = document.getElementById('inputText').value.trim();
+      const errBox = document.getElementById('textError');
+      errBox.classList.add('hidden-view');
+
+      if (!text) {
+        errBox.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5"></i> 請輸入要印製的文字`;
+        errBox.classList.remove('hidden-view');
+        lucide.createIcons();
+        return;
+      }
+
+      orderDraft.text = text;
+      switchFrontView('phone');
+    };
+
+    // Step 3: 驗證手機號碼
+    window.handlePhoneSubmit = () => {
+      const phone = document.getElementById('inputPhone').value.trim();
+      const errBox = document.getElementById('phoneError');
+      errBox.classList.add('hidden-view');
+
+      if (!phone) {
+        errBox.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5"></i> 請輸入手機號碼`;
+        errBox.classList.remove('hidden-view');
+        lucide.createIcons();
+        return;
+      }
+      
+      // 檢查是否已提交過
+      const existingOrder = orders.find(o => o.phone === phone && o.status !== '取消');
+      if (existingOrder) {
+        errBox.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5"></i> 此號碼已登記過序號 (#${existingOrder.sequenceId})`;
+        errBox.classList.remove('hidden-view');
+        lucide.createIcons();
+        return;
+      }
+
+      orderDraft.phone = phone;
+      
+      // 準備顯示確認畫面
+      document.getElementById('confirmGift').innerText = orderDraft.gift;
+      document.getElementById('confirmText').innerText = orderDraft.text;
+      document.getElementById('confirmPhone').innerText = orderDraft.phone;
+      
+      switchFrontView('confirm');
+    };
+
+    // Step 4: 送出訂單至 Firebase
+    window.submitOrder = async () => {
+      const errBox = document.getElementById('submitError');
+      errBox.classList.add('hidden-view');
+
+      const seqStr = String(sequenceCounter).padStart(3, '0');
+      const newOrder = {
+        sequenceId: seqStr,
+        phone: orderDraft.phone,
+        gift: orderDraft.gift,
+        customText: orderDraft.text,
+        status: '處理中',
+        note: '',
+        createdAt: new Date().toLocaleString(),
+        timestamp: Date.now()
+      };
+
+      try {
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), newOrder);
+        document.getElementById('displaySequence').innerText = seqStr;
+        switchFrontView('success');
+      } catch (err) {
+        console.error(err);
+        errBox.innerText = '網路異常送出失敗，請稍後再試';
+        errBox.classList.remove('hidden-view');
+      }
+    };
+
+    // 查詢進度功能
+    window.handleSearch = () => {
+      const searchVal = document.getElementById('searchSeq').value.trim();
+      const errBox = document.getElementById('searchError');
+      const resultCard = document.getElementById('searchResultCard');
+      
+      errBox.classList.add('hidden-view');
+      resultCard.classList.add('hidden-view');
+
+      if(!searchVal) return;
+
+      const order = orders.find(o => o.sequenceId === searchVal);
+      if (order) {
+        let statusHtml = '';
+        if (order.status === '處理中') statusHtml = `<span class="bg-yellow-500/20 text-yellow-200 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 border border-yellow-500/50"><i data-lucide="clock" class="w-4 h-4"></i>處理中</span>`;
+        if (order.status === '完成') statusHtml = `<span class="bg-green-500/20 text-green-200 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 border border-green-500/50"><i data-lucide="check-circle" class="w-4 h-4"></i>完成</span>`;
+        if (order.status === '取消') statusHtml = `<span class="bg-red-500/20 text-red-200 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 border border-red-500/50"><i data-lucide="x-circle" class="w-4 h-4"></i>取消</span>`;
+
+        const maskedPhone = order.phone.replace(/(\d{4})\d{3}(\d{3})/, '$1***$2');
+
+        resultCard.innerHTML = `
+          <div class="bg-black/40 px-4 py-3 border-b border-white/10 flex justify-between items-center">
+            <span class="font-bold text-white drop-shadow-sm">序號 #${order.sequenceId}</span>
+            ${statusHtml}
+          </div>
+          <div class="p-4 space-y-3 text-sm">
+            <div class="flex justify-between border-b border-white/10 pb-2"><span class="text-white/70">選擇禮品</span><span class="font-medium text-white">${order.gift || '未紀錄'}</span></div>
+            <div class="flex justify-between border-b border-white/10 pb-2"><span class="text-white/70">印製文字</span><span class="font-bold text-white drop-shadow-sm">${order.customText || '未紀錄'}</span></div>
+            <div class="flex justify-between border-b border-white/10 pb-2"><span class="text-white/70">聯絡手機</span><span class="text-white/90">${maskedPhone}</span></div>
+            <div class="flex justify-between"><span class="text-white/70">建立時間</span><span class="text-white/60">${order.createdAt}</span></div>
+          </div>
+        `;
+        resultCard.classList.remove('hidden-view');
+        lucide.createIcons();
+      } else {
+        errBox.innerText = '找不到此序號的訂單，請確認輸入是否正確';
+        errBox.classList.remove('hidden-view');
+      }
+    };
+
+    // --- 後台邏輯 (Backend) ---
+    
+    // 匯出 CSV
+    window.handleExportCSV = () => {
+      if(orders.length === 0) {
+        showModal('無法匯出', '目前系統中沒有任何訂單可以匯出。');
+        return;
+      }
+
+      const headers = ["序號", "手機號碼", "選擇禮品", "印製文字", "狀態", "備註", "建立時間"];
+      const rows = orders.map(o => [
+        o.sequenceId, 
+        o.phone, 
+        o.gift || '', 
+        o.customText || '', 
+        o.status, 
+        o.note || '', 
+        o.createdAt
+      ]);
+      const csvContent = "data:text/csv;charset=utf-8,\uFEFF" 
+        + headers.join(",") + "\n" 
+        + rows.map(e => e.map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")).join("\n");
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `活動訂單_${new Date().getTime()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    // 清空重置
+    window.confirmReset = () => {
+      showModal('警告', '確定要清空所有訂單並將序號重置為 001 嗎？此操作無法還原！', 'confirm', async () => {
+        try {
+          // 在真實環境中若訂單極多，應該用批次刪除，這裡為求穩定採用迴圈
+          for (const order of orders) {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', order.id));
+          }
+          showModal('成功', '系統資料已成功重置。');
+        } catch(err) {
+          console.error(err);
+          showModal('錯誤', '重置發生異常，請檢查網路連線。');
+        }
+      });
+    };
+
+    // 表格操作 (委派事件)
+    window.changeOrderStatus = async (id, newStatus) => {
+      await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id), { status: newStatus });
+    };
+
+    window.startEditNote = (id) => {
+      currentEditNoteId = id;
+      renderOrdersTable(); // 重新渲染以顯示輸入框
+    };
+
+    window.saveOrderNote = async (id) => {
+      const inputEl = document.getElementById(`noteInput-${id}`);
+      if(inputEl) {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id), { note: inputEl.value });
+      }
+      currentEditNoteId = null;
+    };
+
+    // 渲染表格內容
+    const renderOrdersTable = () => {
+      const tbody = document.getElementById('ordersTableBody');
+      const sortedOrders = [...orders].sort((a, b) => b.timestamp - a.timestamp);
+
+      if (sortedOrders.length === 0) {
+        tbody.innerHTML = `<tr><td colSpan="6" class="p-12 text-center text-slate-400 font-medium">目前尚無任何訂單資料</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      sortedOrders.forEach(order => {
+        let selectClass = "px-4 py-2 rounded-xl text-sm font-bold border outline-none cursor-pointer appearance-none shadow-sm transition-all ";
+        if(order.status === '處理中') selectClass += "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100";
+        else if (order.status === '完成') selectClass += "bg-green-50 text-green-700 border-green-200 hover:bg-green-100";
+        else selectClass += "bg-red-50 text-red-700 border-red-200 hover:bg-red-100";
+        
+        let noteHtml = '';
+        if (currentEditNoteId === order.id) {
+           noteHtml = `
+            <div class="flex gap-2 items-center">
+              <input type="text" id="noteInput-${order.id}" class="border border-indigo-200 px-3 py-1.5 rounded-lg text-sm w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-inner" value="${order.note || ''}">
+              <button onclick="saveOrderNote('${order.id}')" class="text-xs bg-indigo-600 text-white px-3 py-2 rounded-lg font-bold shadow-sm hover:bg-indigo-700 transition">儲存</button>
+            </div>
+           `;
+        } else {
+           const noteContent = order.note ? order.note : `<span class="text-slate-400 italic">點擊新增備註...</span>`;
+           noteHtml = `
+            <div onclick="startEditNote('${order.id}')" class="flex items-center justify-between group-hover:bg-white p-2 -m-2 rounded-lg cursor-pointer transition-all border border-transparent group-hover:border-slate-200 group-hover:shadow-sm">
+              <span class="text-slate-600 text-sm truncate max-w-[150px]">${noteContent}</span>
+              <i data-lucide="edit-3" class="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors opacity-0 group-hover:opacity-100"></i>
+            </div>
+           `;
+        }
+
+        html += `
+          <tr class="border-b border-slate-100 hover:bg-indigo-50/50 transition-colors group">
+            <td class="p-5 font-mono font-bold text-slate-700">#${order.sequenceId}</td>
+            <td class="p-5 font-medium text-slate-800">${order.phone}</td>
+            <td class="p-5 text-slate-600 font-medium">${order.gift || '-'}</td>
+            <td class="p-5 text-blue-700 font-bold">${order.customText || '-'}</td>
+            <td class="p-5">
+              <select onchange="changeOrderStatus('${order.id}', this.value)" class="${selectClass}" style="background-image: url('data:image/svg+xml,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'none\\' viewBox=\\'0 0 20 20\\'%3e%3cpath stroke=\\'%236b7280\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M6 8l4 4 4-4\\'/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
+                <option value="處理中" ${order.status === '處理中' ? 'selected' : ''}>處理中</option>
+                <option value="完成" ${order.status === '完成' ? 'selected' : ''}>完成</option>
+                <option value="取消" ${order.status === '取消' ? 'selected' : ''}>取消 (解鎖)</option>
+              </select>
+            </td>
+            <td class="p-5">
+              ${noteHtml}
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+      lucide.createIcons(); // 重新產生 icon
+    };
+
+
+    // --- 系統初始化與 Firebase 監聽 ---
+    const initApp = async () => {
+      try {
+        await signInAnonymously(auth);
+      } catch (error) {
+        console.error("Auth error:", error);
+      }
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          // 隱藏載入畫面，直接顯示前端介面
+          document.getElementById('loadingView').classList.add('hidden-view');
+          switchAppMode('frontend');
+
+          // 監聽 Orders (已移除 Whitelist 邏輯)
+          onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), (snapshot) => {
+            orders = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            
+            // 更新狀態列與序號計數器
+            if (orders.length > 0) {
+              const maxSeq = Math.max(...orders.map(o => parseInt(o.sequenceId, 10)));
+              sequenceCounter = maxSeq + 1;
+            } else {
+              sequenceCounter = 1;
+            }
+            document.getElementById('statTotalOrders').innerText = orders.length;
+            document.getElementById('statNextSeq').innerText = '#' + String(sequenceCounter).padStart(3, '0');
+            
+            // 如果目前在後台，重新渲染表格
+            renderOrdersTable();
+          });
+        }
+      });
+    };
+
+    // 啟動應用程式
+    lucide.createIcons();
+    initApp();
+
+  </script>
+</body>
+</html>
