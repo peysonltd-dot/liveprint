@@ -206,7 +206,9 @@
 
           <div class="flex gap-3 pt-2">
             <button onclick="switchFrontView('phone')" class="flex-1 py-4 bg-black/20 text-white/90 border border-white/20 hover:bg-black/30 rounded-xl font-medium transition">修改資料</button>
-            <button onclick="submitOrder()" class="flex-1 py-4 bg-white text-red-600 hover:bg-gray-100 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105">確認送出</button>
+            <button onclick="submitOrder()" class="flex-1 py-4 bg-white text-red-600 hover:bg-gray-100 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105 flex items-center justify-center gap-2">
+              <i data-lucide="send" class="w-5 h-5 hidden" id="submitIcon"></i> 送出訂單
+            </button>
           </div>
         </div>
 
@@ -412,9 +414,10 @@
   <!-- 應用程式邏輯 (Vanilla JS + Firebase Module)-->
   <!-- ========================================== -->
   <script type="module">
+    // 引入 runTransaction 來處理高併發序號不重複的問題
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    import { getFirestore, collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     // --- Firebase 設定 ---
     const firebaseConfig = {
@@ -434,7 +437,7 @@
 
     // --- 全域狀態 ---
     let orders = [];
-    let sequenceCounter = 1;
+    let sequenceCounter = 1; // 供 UI 顯示使用
     let currentEditNoteId = null;
     
     // 庫存與兌換數量設定
@@ -558,12 +561,10 @@
 
     // --- 前台與庫存控制 ---
     
-    // 更新庫存 UI 顯示 (前台標籤與後台數字)
     window.updateInventoryUI = () => {
       const remainLuggage = Math.max(0, sysConfig.limitLuggage - validLuggageCount);
       const remainCardholder = Math.max(0, sysConfig.limitCardholder - validCardholderCount);
 
-      // 處理前台 行李牌 外觀
       const elLug = document.getElementById('cardLuggage');
       const badgeLug = document.getElementById('badgeLuggage');
       if (remainLuggage <= 0) {
@@ -573,10 +574,9 @@
       } else {
         elLug.classList.remove('opacity-50', 'grayscale');
         elLug.classList.add('hover:-translate-y-1', 'hover:border-white');
-        badgeLug.innerHTML = ''; // 有庫存時不顯示剩餘數量標籤
+        badgeLug.innerHTML = ''; 
       }
 
-      // 處理前台 卡夾 外觀
       const elCard = document.getElementById('cardCardholder');
       const badgeCard = document.getElementById('badgeCardholder');
       if (remainCardholder <= 0) {
@@ -586,17 +586,15 @@
       } else {
         elCard.classList.remove('opacity-50', 'grayscale');
         elCard.classList.add('hover:-translate-y-1', 'hover:border-white');
-        badgeCard.innerHTML = ''; // 有庫存時不顯示剩餘數量標籤
+        badgeCard.innerHTML = ''; 
       }
 
-      // 處理後台 統計與設定輸入框
       document.getElementById('inputLimitLuggage').value = sysConfig.limitLuggage;
       document.getElementById('inputLimitCardholder').value = sysConfig.limitCardholder;
       document.getElementById('statLuggageUsage').innerText = `已兌換: ${validLuggageCount}`;
       document.getElementById('statCardholderUsage').innerText = `已兌換: ${validCardholderCount}`;
     };
 
-    // 點選禮品 (加入庫存檢查防呆)
     window.selectGift = (giftName) => {
       const remainLuggage = sysConfig.limitLuggage - validLuggageCount;
       const remainCardholder = sysConfig.limitCardholder - validCardholderCount;
@@ -647,11 +645,12 @@
       switchFrontView('confirm');
     };
 
+    // 修改：使用 runTransaction 處理高併發序號不重複
     window.submitOrder = async () => {
       const errBox = document.getElementById('submitError');
       errBox.classList.add('hidden-view');
       
-      // 送出前最後一次雙重確認庫存 (防併發)
+      // 前端初步雙重確認庫存 (防併發)
       const remainLuggage = sysConfig.limitLuggage - validLuggageCount;
       const remainCardholder = sysConfig.limitCardholder - validCardholderCount;
       if (orderDraft.gift === '皮革行李牌' && remainLuggage <= 0) {
@@ -663,26 +662,55 @@
         errBox.classList.remove('hidden-view'); return;
       }
 
-      const seqStr = String(sequenceCounter).padStart(3, '0');
-      const newOrder = {
-        sequenceId: seqStr,
-        phone: orderDraft.phone,
-        gift: orderDraft.gift,
-        customText: orderDraft.text,
-        status: '處理中',
-        note: '',
-        createdAt: new Date().toLocaleString(),
-        timestamp: Date.now()
-      };
+      // UI 處理中防呆
+      document.getElementById('submitIcon').classList.remove('hidden');
 
       try {
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), newOrder);
-        document.getElementById('displaySequence').innerText = seqStr;
+        // 利用 Firebase Transaction 確保號碼牌絕對不重複
+        const finalSeqStr = await runTransaction(db, async (transaction) => {
+          const counterRef = doc(db, 'artifacts', appId, 'public', 'data', 'system', 'counter');
+          const counterSnap = await transaction.get(counterRef);
+
+          let nextSeq = 1;
+          if (counterSnap.exists() && counterSnap.data().currentSeq !== undefined) {
+             nextSeq = counterSnap.data().currentSeq + 1;
+          } else if (orders.length > 0) {
+             // 若無計數器但有歷史訂單，利用歷史最高序號推算 (防呆)
+             nextSeq = Math.max(...orders.map(o => parseInt(o.sequenceId, 10))) + 1;
+          }
+
+          // 更新排隊號碼機
+          transaction.set(counterRef, { currentSeq: nextSeq }, { merge: true });
+
+          const seqStr = String(nextSeq).padStart(3, '0');
+          
+          // 寫入訂單資料
+          const newOrderRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'));
+          const newOrder = {
+            sequenceId: seqStr,
+            phone: orderDraft.phone,
+            gift: orderDraft.gift,
+            customText: orderDraft.text,
+            status: '處理中',
+            note: '',
+            createdAt: new Date().toLocaleString(),
+            timestamp: Date.now()
+          };
+          
+          transaction.set(newOrderRef, newOrder);
+          return seqStr; // 回傳成功取得的序號
+        });
+
+        // 交易成功，顯示成功畫面
+        document.getElementById('displaySequence').innerText = finalSeqStr;
+        document.getElementById('submitIcon').classList.add('hidden');
         switchFrontView('success');
+
       } catch (err) {
-        console.error(err);
-        errBox.innerText = '網路異常送出失敗，請稍後再試';
+        console.error("Transaction Error: ", err);
+        errBox.innerText = '系統繁忙中排隊失敗，請再試一次。';
         errBox.classList.remove('hidden-view');
+        document.getElementById('submitIcon').classList.add('hidden');
       }
     };
 
@@ -720,7 +748,6 @@
 
     // --- 後台儲存與功能 ---
     
-    // 儲存庫存設定至 Firebase
     window.saveStockLimits = async () => {
       const valLug = parseInt(document.getElementById('inputLimitLuggage').value, 10);
       const valCard = parseInt(document.getElementById('inputLimitCardholder').value, 10);
@@ -754,11 +781,14 @@
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
     };
 
+    // 修改：重置時連同發號碼機一起歸零
     window.confirmReset = () => {
       showModal('警告', '確定要清空所有訂單並重置嗎？', 'confirm', async () => {
         try {
           for (const order of orders) { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', order.id)); }
-          showModal('成功', '系統資料已成功重置。');
+          // 重置雲端排隊計數器
+          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'system', 'counter'), { currentSeq: 0 });
+          showModal('成功', '系統資料與發號碼機已成功重置。');
         } catch(err) { showModal('錯誤', '重置發生異常。'); }
       });
     };
@@ -782,7 +812,6 @@
 
       const sortedOrders = [...orders].sort((a, b) => b.timestamp - a.timestamp);
       
-      // 搜尋過濾邏輯
       const filteredOrders = searchTerm 
         ? sortedOrders.filter(o => o.sequenceId.includes(searchTerm) || o.phone.includes(searchTerm) || (o.customText && o.customText.toLowerCase().includes(searchTerm)))
         : sortedOrders;
@@ -813,7 +842,7 @@
       });
       tbody.innerHTML = html; lucide.createIcons();
     };
-    window.renderOrdersTable = renderOrdersTable; // 綁定至全域提供給搜尋框使用
+    window.renderOrdersTable = renderOrdersTable;
 
     // --- 系統初始化 ---
     const initApp = async () => {
@@ -834,7 +863,7 @@
             updateInventoryUI();
           });
 
-          // 2. 監聽訂單變化 (計算已兌換數量)
+          // 2. 監聽訂單變化
           onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), (snapshot) => {
             orders = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             
@@ -845,6 +874,7 @@
             document.getElementById('statLuggage').innerText = validLuggageCount;
             document.getElementById('statCardholder').innerText = validCardholderCount;
             
+            // 更新 UI 顯示用的下個流水號（不再作為真實寫入依據）
             if (orders.length > 0) {
               const maxSeq = Math.max(...orders.map(o => parseInt(o.sequenceId, 10)));
               sequenceCounter = maxSeq + 1;
