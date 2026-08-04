@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>活動兌獎系統</title>
+  <title>現場印製帆布袋</title>
   
   <!-- 載入 Tailwind CSS (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -34,7 +34,7 @@
   <div id="loadingView" class="min-h-screen flex items-center justify-center bg-gray-50 fixed inset-0 z-[150]">
     <div class="text-indigo-600 font-bold text-xl flex flex-col items-center gap-4">
       <i data-lucide="refresh-cw" class="w-8 h-8 animate-spin"></i>
-      正在連線至 Firebase 雲端系統...
+      系統載入中...
     </div>
   </div>
 
@@ -60,7 +60,7 @@
       <!-- Header -->
       <div class="bg-black/20 text-white p-4 flex justify-between items-center shadow-md z-10 border-b border-white/10">
         <div class="w-8"></div>
-        <h1 class="text-lg font-bold tracking-widest">活動兌獎</h1>
+        <h1 class="text-lg font-bold tracking-widest">現場印製體驗</h1>
         <button onclick="showExitPrompt()" class="w-8 flex justify-end text-white/60 hover:text-white transition">
           <i data-lucide="settings" class="w-5 h-5"></i>
         </button>
@@ -88,53 +88,20 @@
         <div id="frontHome" class="space-y-6 animate-fade-in">
           <div class="text-center">
             <i data-lucide="gift" class="w-16 h-16 mx-auto text-white mb-4 drop-shadow-md"></i>
-            <h2 class="text-2xl font-bold text-white drop-shadow-md">活動禮品兌換</h2>
-            <p class="text-white/80 mt-2 text-sm drop-shadow-sm">專屬客製化紀念品登記</p>
+            <h2 class="text-2xl font-bold text-white drop-shadow-md">客製帆布袋</h2>
+            <p class="text-white/80 mt-2 text-sm drop-shadow-sm">選擇喜歡的圖案，加入您的專屬文字</p>
           </div>
-          <button onclick="switchFrontView('gift')" class="w-full py-4 bg-white text-red-600 hover:bg-gray-100 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105">開始兌換</button>
+          <button onclick="switchFrontView('gift')" class="w-full py-4 bg-white text-red-600 hover:bg-gray-100 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105">開始製作</button>
           <button onclick="switchFrontView('status')" class="w-full py-4 bg-black/20 hover:bg-black/30 text-white rounded-xl font-semibold text-lg shadow transition transform hover:scale-105 border border-white/20">查詢進度</button>
         </div>
 
-        <!-- ================== 1. 禮品二選一 ================== -->
+        <!-- ================== 1. 圖案六選一 ================== -->
         <div id="frontGift" class="hidden-view space-y-6 animate-fade-in">
-          <h2 class="text-xl font-bold text-white border-b border-white/20 pb-2 drop-shadow-md">請選擇您的禮品</h2>
-          <div class="grid grid-cols-2 gap-4">
-            
-            <!-- 選項 1: 行李牌 -->
-            <div id="cardLuggage" onclick="selectGift('皮革行李牌')" class="group cursor-pointer bg-black/30 border-2 border-white/20 hover:border-white rounded-2xl overflow-hidden transition-all transform hover:-translate-y-1 relative">
-              <div id="badgeLuggage" class="absolute top-2 right-2 z-10">
-                <!-- 剩餘標籤 (JS 動態插入) -->
-              </div>
-              <div class="aspect-[3/4] bg-black/40 flex items-center justify-center relative">
-                <img src="https://img.shoplineapp.com/media/image_clips/69e39bb42454b85ce5655e9f/original.jpg?1776524212=&owner_id=66221c5c384dbb002ec45c18" alt="皮革行李牌" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" />
-                <div class="hidden absolute inset-0 flex flex-col items-center justify-center text-white/50">
-                  <i data-lucide="luggage" class="w-10 h-10 mb-2"></i>
-                  <span class="text-xs">圖片載入失敗</span>
-                </div>
-              </div>
-              <div class="p-3 text-center bg-black/40 group-hover:bg-white/20 transition-colors">
-                <span class="font-bold text-sm text-white drop-shadow-sm">皮革行李牌</span>
-              </div>
-            </div>
-
-            <!-- 選項 2: 卡夾 -->
-            <div id="cardCardholder" onclick="selectGift('皮革卡夾')" class="group cursor-pointer bg-black/30 border-2 border-white/20 hover:border-white rounded-2xl overflow-hidden transition-all transform hover:-translate-y-1 relative">
-              <div id="badgeCardholder" class="absolute top-2 right-2 z-10">
-                <!-- 剩餘標籤 (JS 動態插入) -->
-              </div>
-              <div class="aspect-[3/4] bg-black/40 flex items-center justify-center relative">
-                <img src="https://img.shoplineapp.com/media/image_clips/69e39bb099d2fa219d160b19/original.png?1776524208=&owner_id=66221c5c384dbb002ec45c18" alt="皮革卡夾" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" />
-                <div class="hidden absolute inset-0 flex flex-col items-center justify-center text-white/50">
-                  <i data-lucide="credit-card" class="w-10 h-10 mb-2"></i>
-                  <span class="text-xs">圖片載入失敗</span>
-                </div>
-              </div>
-              <div class="p-3 text-center bg-black/40 group-hover:bg-white/20 transition-colors">
-                <span class="font-bold text-sm text-white drop-shadow-sm">皮革卡夾</span>
-              </div>
-            </div>
-
+          <div>
+            <h2 class="text-xl font-bold text-white drop-shadow-md">選擇圖案</h2>
+            <p class="text-sm text-white/70 mt-1">請從以下六款圖案中選擇一款</p>
           </div>
+          <div id="designGrid" class="grid grid-cols-2 gap-3"></div>
           <button onclick="switchFrontView('home')" class="w-full py-3 bg-black/20 text-white/90 border border-white/20 hover:bg-black/30 rounded-xl font-medium mt-4 transition">返回</button>
         </div>
 
@@ -148,7 +115,7 @@
           <div class="space-y-2">
             <label class="text-sm text-white/80 font-medium">請輸入要印製的文字 (中、英文皆可)</label>
             <input type="text" id="inputText" placeholder="例如: 王大明 或 Mike Wang" class="w-full p-4 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-lg placeholder-white/50 shadow-inner" />
-            <p class="text-xs text-white/70 mt-1">此文字將會印製在您選擇的 <strong id="displaySelectedGift" class="text-white drop-shadow-sm"></strong> 上</p>
+            <p class="text-xs text-white/70 mt-1">文字將固定印製於 <strong id="displaySelectedGift" class="text-white drop-shadow-sm"></strong> 圖案下方</p>
           </div>
           
           <div id="textError" class="hidden-view p-3 bg-black/40 border border-red-400 text-red-200 rounded-lg flex items-center gap-2 text-sm"></div>
@@ -186,11 +153,12 @@
           
           <div class="bg-black/30 rounded-2xl p-6 space-y-4 border border-white/20 shadow-inner">
             <div>
-              <span class="block text-xs text-white/60 mb-1">禮品項目</span>
+              <span class="block text-xs text-white/60 mb-1">選擇圖案</span>
               <div class="font-bold text-lg text-white flex items-center gap-2">
                 <i data-lucide="check-circle-2" class="w-5 h-5"></i>
                 <span id="confirmGift">--</span>
               </div>
+              <img id="confirmDesignImage" alt="已選圖案預覽" class="mt-3 w-full max-h-44 object-contain rounded-xl bg-white/90 p-2" />
             </div>
             <div class="border-t border-white/10 pt-4">
               <span class="block text-xs text-white/60 mb-1">印製文字</span>
@@ -220,7 +188,7 @@
             <div id="displaySequence" class="text-6xl font-black text-white tracking-wider bg-black/20 py-4 rounded-2xl border border-white/20 shadow-inner">000</div>
           </div>
           <div class="bg-white/10 border border-white/20 p-4 rounded-xl text-white font-medium leading-relaxed backdrop-blur-sm">
-            登記已完成！<br>請截圖此畫面於領取禮品時出示給工作人員兌換。
+            登記已完成！<br>請記住或截圖此號碼，並依現場工作人員指示領取。
           </div>
           <button onclick="switchFrontView('home')" class="w-full py-4 bg-black/20 border border-white/20 text-white rounded-xl font-medium mt-4 hover:bg-black/30 transition">回首頁</button>
         </div>
@@ -286,14 +254,14 @@
         <div class="flex gap-4 sm:gap-6 text-sm items-center">
           
           <div class="flex flex-col items-end hidden sm:flex">
-            <span class="text-slate-500 text-xs">行李牌 (已兌)</span>
-            <span id="statLuggage" class="font-bold text-blue-600 text-lg">0</span>
+            <span class="text-slate-500 text-xs">待製作</span>
+            <span id="statPending" class="font-bold text-amber-600 text-lg">0</span>
           </div>
           <div class="w-px h-6 bg-slate-200 hidden sm:block"></div>
           
           <div class="flex flex-col items-end hidden sm:flex">
-            <span class="text-slate-500 text-xs">卡夾 (已兌)</span>
-            <span id="statCardholder" class="font-bold text-purple-600 text-lg">0</span>
+            <span class="text-slate-500 text-xs">已完成</span>
+            <span id="statCompleted" class="font-bold text-green-600 text-lg">0</span>
           </div>
           <div class="w-px h-10 bg-slate-200 hidden sm:block"></div>
 
@@ -327,7 +295,7 @@
                 <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 text-sm tracking-wide">
                   <th class="p-5 font-semibold w-24">序號</th>
                   <th class="p-5 font-semibold">手機號碼</th>
-                  <th class="p-5 font-semibold">選擇禮品</th>
+                  <th class="p-5 font-semibold">選擇圖案</th>
                   <th class="p-5 font-semibold text-blue-600">印製文字</th>
                   <th class="p-5 font-semibold w-40">狀態</th>
                   <th class="p-5 font-semibold">備註</th>
@@ -343,42 +311,8 @@
         <!-- ================= 系統管理分頁 ================= -->
         <div id="backSystemView" class="hidden-view grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl">
           
-          <!-- 左側：資料匯出 & 庫存設定 -->
+          <!-- 左側：資料匯出 -->
           <div class="space-y-8">
-            
-            <!-- 庫存設定區塊 -->
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-              <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3"><i data-lucide="package" class="w-6 h-6 text-indigo-500"></i> 庫存數量設定</h3>
-              <div class="space-y-4">
-                
-                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <div>
-                    <span class="block font-bold text-slate-700">皮革行李牌</span>
-                    <span id="statLuggageUsage" class="text-xs text-slate-500 mt-1">已兌換: 0</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <input type="number" id="inputLimitLuggage" class="w-20 p-2 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-indigo-500 focus:outline-none" min="0">
-                    <span class="text-slate-500 text-sm">個</span>
-                  </div>
-                </div>
-                
-                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <div>
-                    <span class="block font-bold text-slate-700">皮革卡夾</span>
-                    <span id="statCardholderUsage" class="text-xs text-slate-500 mt-1">已兌換: 0</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <input type="number" id="inputLimitCardholder" class="w-20 p-2 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-indigo-500 focus:outline-none" min="0">
-                    <span class="text-slate-500 text-sm">個</span>
-                  </div>
-                </div>
-
-                <button onclick="saveStockLimits()" class="w-full mt-2 bg-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition shadow-md flex items-center justify-center gap-2">
-                  <i data-lucide="save" class="w-4 h-4"></i> 儲存庫存設定
-                </button>
-              </div>
-            </div>
-
             <!-- 資料匯出區塊 -->
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
               <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3"><i data-lucide="download" class="w-6 h-6 text-green-600"></i> 資料匯出</h3>
@@ -397,7 +331,7 @@
             <h3 class="text-xl font-bold text-red-600 mb-6 flex items-center gap-3"><i data-lucide="alert-triangle" class="w-6 h-6"></i> 系統危險操作</h3>
             <div class="bg-red-50 text-red-800 p-5 rounded-2xl text-sm mb-6 border border-red-100 leading-relaxed">
               <strong class="block text-red-900 text-base mb-1">⚠️ 警告：這是一項不可逆的操作</strong>
-              執行此操作將會<strong>徹底清空所有的訂單記錄</strong>，並將下一次的報名序號重新設定回 <strong>001</strong>。已扣除的庫存數量也會跟著釋放。請確保您已匯出備份資料。
+              執行此操作將會<strong>徹底清空所有的訂單記錄</strong>，並將下一次的序號重新設定回 <strong>001</strong>。請確保您已匯出備份資料。
             </div>
             <button onclick="confirmReset()" class="w-full bg-red-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-red-700 transition shadow-md shadow-red-600/20 flex items-center justify-center gap-2">
               <i data-lucide="trash-2" class="w-4 h-4"></i> 確認一鍵重置系統
@@ -433,19 +367,23 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const appId = "peysoncustomized-app";
+    const appId = "liveprint-canvas-event";
 
     // --- 全域狀態 ---
     let orders = [];
     let sequenceCounter = 1; // 供 UI 顯示使用
     let currentEditNoteId = null;
     
-    // 庫存與兌換數量設定
-    let sysConfig = { limitLuggage: 100, limitCardholder: 100 };
-    let validLuggageCount = 0;
-    let validCardholderCount = 0;
+    const designs = [
+      { id: 'design-1', name: '圖案 1', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa2f6ba96960fcf42a8f/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-2', name: '圖案 2', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa2fb42b765abaf4ad21/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-3', name: '圖案 3', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa2f7f4de4a814c465d4/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-4', name: '圖案 4', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa3086bf46d81cf0b66a/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-5', name: '圖案 5', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa30e93a4555f4471782/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-6', name: '圖案 6', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa30451b3a711b60a46b/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' }
+    ];
 
-    let orderDraft = { gift: '', text: '', phone: '' };
+    let orderDraft = { gift: '', designImage: '', text: '', phone: '' };
 
     // --- 全域對話框模組 ---
     window.showModal = (title, message, type = 'alert', onConfirm = null) => {
@@ -524,14 +462,16 @@
       document.getElementById('searchResultCard').classList.add('hidden-view');
       
       if (view === 'home') {
-        orderDraft = { gift: '', text: '', phone: '' };
+        orderDraft = { gift: '', designImage: '', text: '', phone: '' };
         document.getElementById('inputText').value = '';
         document.getElementById('inputPhone').value = '';
         document.getElementById('searchSeq').value = '';
       }
 
       const completed = orders.filter(o => o.status === '完成');
-      document.getElementById('displayLastCompleted').innerText = completed.length > 0 ? completed[completed.length - 1].sequenceId : '--';
+      document.getElementById('displayLastCompleted').innerText = completed.length > 0
+        ? completed.reduce((latest, order) => parseInt(order.sequenceId, 10) > parseInt(latest.sequenceId, 10) ? order : latest).sequenceId
+        : '--';
 
       const targetEl = document.getElementById('front' + view.charAt(0).toUpperCase() + view.slice(1));
       if(targetEl) targetEl.classList.remove('hidden-view');
@@ -559,57 +499,27 @@
       lucide.createIcons();
     };
 
-    // --- 前台與庫存控制 ---
-    
-    window.updateInventoryUI = () => {
-      const remainLuggage = Math.max(0, sysConfig.limitLuggage - validLuggageCount);
-      const remainCardholder = Math.max(0, sysConfig.limitCardholder - validCardholderCount);
-
-      const elLug = document.getElementById('cardLuggage');
-      const badgeLug = document.getElementById('badgeLuggage');
-      if (remainLuggage <= 0) {
-        elLug.classList.add('opacity-50', 'grayscale');
-        elLug.classList.remove('hover:-translate-y-1', 'hover:border-white');
-        badgeLug.innerHTML = '<span class="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">已發完</span>';
-      } else {
-        elLug.classList.remove('opacity-50', 'grayscale');
-        elLug.classList.add('hover:-translate-y-1', 'hover:border-white');
-        badgeLug.innerHTML = ''; 
-      }
-
-      const elCard = document.getElementById('cardCardholder');
-      const badgeCard = document.getElementById('badgeCardholder');
-      if (remainCardholder <= 0) {
-        elCard.classList.add('opacity-50', 'grayscale');
-        elCard.classList.remove('hover:-translate-y-1', 'hover:border-white');
-        badgeCard.innerHTML = '<span class="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">已發完</span>';
-      } else {
-        elCard.classList.remove('opacity-50', 'grayscale');
-        elCard.classList.add('hover:-translate-y-1', 'hover:border-white');
-        badgeCard.innerHTML = ''; 
-      }
-
-      document.getElementById('inputLimitLuggage').value = sysConfig.limitLuggage;
-      document.getElementById('inputLimitCardholder').value = sysConfig.limitCardholder;
-      document.getElementById('statLuggageUsage').innerText = `已兌換: ${validLuggageCount}`;
-      document.getElementById('statCardholderUsage').innerText = `已兌換: ${validCardholderCount}`;
+    // --- 前台圖案選擇 ---
+    const renderDesignGrid = () => {
+      const grid = document.getElementById('designGrid');
+      grid.innerHTML = designs.map((design, index) => `
+        <button type="button" onclick="selectGift('${design.id}')" class="group bg-black/25 border-2 border-white/20 hover:border-white rounded-2xl overflow-hidden transition-all transform hover:-translate-y-1 text-left">
+          <div class="aspect-square bg-white/95 flex items-center justify-center p-2">
+            <img src="${design.image}" alt="${design.name}" class="w-full h-full object-contain" loading="eager" />
+          </div>
+          <div class="px-3 py-2.5 text-center bg-black/35 group-hover:bg-white/20 transition-colors">
+            <span class="font-bold text-sm text-white">款式 ${index + 1}</span>
+          </div>
+        </button>
+      `).join('');
     };
 
-    window.selectGift = (giftName) => {
-      const remainLuggage = sysConfig.limitLuggage - validLuggageCount;
-      const remainCardholder = sysConfig.limitCardholder - validCardholderCount;
-
-      if (giftName === '皮革行李牌' && remainLuggage <= 0) {
-        showModal('已發放完畢', '很抱歉，皮革行李牌的庫存已經被兌換完畢囉！');
-        return;
-      }
-      if (giftName === '皮革卡夾' && remainCardholder <= 0) {
-        showModal('已發放完畢', '很抱歉，皮革卡夾的庫存已經被兌換完畢囉！');
-        return;
-      }
-
-      orderDraft.gift = giftName;
-      document.getElementById('displaySelectedGift').innerText = giftName;
+    window.selectGift = (designId) => {
+      const selectedDesign = designs.find(design => design.id === designId);
+      if (!selectedDesign) return;
+      orderDraft.gift = selectedDesign.name;
+      orderDraft.designImage = selectedDesign.image;
+      document.getElementById('displaySelectedGift').innerText = selectedDesign.name;
       switchFrontView('text');
     };
 
@@ -640,6 +550,7 @@
       }
       orderDraft.phone = phone;
       document.getElementById('confirmGift').innerText = orderDraft.gift;
+      document.getElementById('confirmDesignImage').src = orderDraft.designImage;
       document.getElementById('confirmText').innerText = orderDraft.text;
       document.getElementById('confirmPhone').innerText = orderDraft.phone;
       switchFrontView('confirm');
@@ -650,18 +561,6 @@
       const errBox = document.getElementById('submitError');
       errBox.classList.add('hidden-view');
       
-      // 前端初步雙重確認庫存 (防併發)
-      const remainLuggage = sysConfig.limitLuggage - validLuggageCount;
-      const remainCardholder = sysConfig.limitCardholder - validCardholderCount;
-      if (orderDraft.gift === '皮革行李牌' && remainLuggage <= 0) {
-        errBox.innerText = '很抱歉，在您填寫期間行李牌已發放完畢，請重新選擇。';
-        errBox.classList.remove('hidden-view'); return;
-      }
-      if (orderDraft.gift === '皮革卡夾' && remainCardholder <= 0) {
-        errBox.innerText = '很抱歉，在您填寫期間卡夾已發放完畢，請重新選擇。';
-        errBox.classList.remove('hidden-view'); return;
-      }
-
       // UI 處理中防呆
       document.getElementById('submitIcon').classList.remove('hidden');
 
@@ -690,6 +589,7 @@
             sequenceId: seqStr,
             phone: orderDraft.phone,
             gift: orderDraft.gift,
+            designImage: orderDraft.designImage,
             customText: orderDraft.text,
             status: '處理中',
             note: '',
@@ -733,7 +633,7 @@
             ${statusHtml}
           </div>
           <div class="p-4 space-y-3 text-sm">
-            <div class="flex justify-between border-b border-white/10 pb-2"><span class="text-white/70">選擇禮品</span><span class="font-medium text-white">${order.gift || '未紀錄'}</span></div>
+            <div class="flex justify-between border-b border-white/10 pb-2"><span class="text-white/70">選擇圖案</span><span class="font-medium text-white">${order.gift || '未紀錄'}</span></div>
             <div class="flex justify-between border-b border-white/10 pb-2"><span class="text-white/70">印製文字</span><span class="font-bold text-white drop-shadow-sm">${order.customText || '未紀錄'}</span></div>
             <div class="flex justify-between border-b border-white/10 pb-2"><span class="text-white/70">聯絡手機</span><span class="text-white/90">${maskedPhone}</span></div>
             <div class="flex justify-between"><span class="text-white/70">建立時間</span><span class="text-white/60">${order.createdAt}</span></div>
@@ -748,31 +648,10 @@
 
     // --- 後台儲存與功能 ---
     
-    window.saveStockLimits = async () => {
-      const valLug = parseInt(document.getElementById('inputLimitLuggage').value, 10);
-      const valCard = parseInt(document.getElementById('inputLimitCardholder').value, 10);
-      
-      if (isNaN(valLug) || isNaN(valCard) || valLug < 0 || valCard < 0) {
-        showModal('錯誤', '請輸入正確的數字上限。');
-        return;
-      }
-      
-      try {
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'system', 'config'), {
-          limitLuggage: valLug,
-          limitCardholder: valCard
-        }, { merge: true });
-        showModal('成功', '庫存設定已更新！');
-      } catch (err) {
-        console.error(err);
-        showModal('錯誤', '儲存失敗，請確認網路連線。');
-      }
-    };
-
     window.handleExportCSV = () => {
       if(orders.length === 0) { showModal('無法匯出', '目前沒有訂單。'); return; }
-      const headers = ["序號", "手機號碼", "選擇禮品", "印製文字", "狀態", "備註", "建立時間"];
-      const rows = orders.map(o => [o.sequenceId, o.phone, o.gift || '', o.customText || '', o.status, o.note || '', o.createdAt]);
+      const headers = ["序號", "手機號碼", "選擇圖案", "圖案網址", "印製文字", "狀態", "備註", "建立時間"];
+      const rows = orders.map(o => [o.sequenceId, o.phone, o.gift || '', o.designImage || '', o.customText || '', o.status, o.note || '', o.createdAt]);
       const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(",") + "\n" + rows.map(e => e.map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")).join("\n");
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -813,7 +692,7 @@
       const sortedOrders = [...orders].sort((a, b) => b.timestamp - a.timestamp);
       
       const filteredOrders = searchTerm 
-        ? sortedOrders.filter(o => o.sequenceId.includes(searchTerm) || o.phone.includes(searchTerm) || (o.customText && o.customText.toLowerCase().includes(searchTerm)))
+        ? sortedOrders.filter(o => o.sequenceId.includes(searchTerm) || o.phone.includes(searchTerm) || (o.gift && o.gift.toLowerCase().includes(searchTerm)) || (o.customText && o.customText.toLowerCase().includes(searchTerm)))
         : sortedOrders;
 
       if (filteredOrders.length === 0) {
@@ -834,7 +713,12 @@
           <tr class="border-b border-slate-100 hover:bg-indigo-50/50 transition-colors group">
             <td class="p-5 font-mono font-bold text-slate-700">#${order.sequenceId}</td>
             <td class="p-5 font-medium text-slate-800">${order.phone}</td>
-            <td class="p-5 text-slate-600 font-medium">${order.gift || '-'}</td>
+            <td class="p-5 text-slate-600 font-medium">
+              <div class="flex items-center gap-3">
+                ${order.designImage ? `<img src="${order.designImage}" alt="${order.gift || '圖案'}" class="w-14 h-14 object-contain rounded-lg border border-slate-200 bg-white p-1">` : ''}
+                <span>${order.gift || '-'}</span>
+              </div>
+            </td>
             <td class="p-5 text-blue-700 font-bold">${order.customText || '-'}</td>
             <td class="p-5"><select onchange="changeOrderStatus('${order.id}', this.value)" class="${selectClass}" style="background-image: url('data:image/svg+xml,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'none\\' viewBox=\\'0 0 20 20\\'%3e%3cpath stroke=\\'%236b7280\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M6 8l4 4 4-4\\'/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"><option value="處理中" ${order.status === '處理中' ? 'selected' : ''}>處理中</option><option value="完成" ${order.status === '完成' ? 'selected' : ''}>完成</option><option value="取消" ${order.status === '取消' ? 'selected' : ''}>取消 (解鎖)</option></select></td>
             <td class="p-5">${noteHtml}</td>
@@ -853,26 +737,12 @@
           document.getElementById('loadingView').classList.add('hidden-view');
           switchAppMode('frontend');
 
-          // 1. 監聽系統庫存設定
-          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'system', 'config'), (docSnap) => {
-            if (docSnap.exists()) {
-              sysConfig = docSnap.data();
-            } else {
-              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'system', 'config'), sysConfig);
-            }
-            updateInventoryUI();
-          });
-
-          // 2. 監聽訂單變化
+          // 監聽訂單變化
           onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), (snapshot) => {
             orders = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-            
-            const validOrders = orders.filter(o => o.status !== '取消');
-            validLuggageCount = validOrders.filter(o => o.gift === '皮革行李牌').length;
-            validCardholderCount = validOrders.filter(o => o.gift === '皮革卡夾').length;
 
-            document.getElementById('statLuggage').innerText = validLuggageCount;
-            document.getElementById('statCardholder').innerText = validCardholderCount;
+            document.getElementById('statPending').innerText = orders.filter(o => o.status === '處理中').length;
+            document.getElementById('statCompleted').innerText = orders.filter(o => o.status === '完成').length;
             
             // 更新 UI 顯示用的下個流水號（不再作為真實寫入依據）
             if (orders.length > 0) {
@@ -884,13 +754,13 @@
             document.getElementById('statTotalOrders').innerText = orders.length;
             document.getElementById('statNextSeq').innerText = '#' + String(sequenceCounter).padStart(3, '0');
             
-            updateInventoryUI();
             renderOrdersTable();
           });
         }
       });
     };
 
+    renderDesignGrid();
     lucide.createIcons();
     initApp();
 
