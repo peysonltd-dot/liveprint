@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- LivePrint Green UI v4 -->
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
@@ -24,15 +25,60 @@
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+
+    :root {
+      --forest-950: #062d24;
+      --forest-900: #0b3b2f;
+      --forest-800: #145440;
+      --forest-200: #b9d2c4;
+      --forest-100: #dce9e1;
+      --cream: #f6f0e4;
+    }
+    .event-bg {
+      background:
+        radial-gradient(circle at 15% 12%, rgba(185, 210, 196, .18), transparent 34%),
+        linear-gradient(145deg, var(--forest-950) 0%, var(--forest-900) 48%, var(--forest-800) 100%);
+    }
+    .event-shell {
+      background: rgba(4, 35, 28, .38);
+      border-color: rgba(220, 233, 225, .24);
+      box-shadow: 0 28px 70px rgba(2, 25, 20, .38);
+    }
+    .event-header {
+      background: rgba(4, 35, 28, .52);
+      border-color: rgba(220, 233, 225, .16);
+    }
+    #frontendView .event-primary {
+      background: var(--cream);
+      color: var(--forest-900);
+      border: 1px solid rgba(255,255,255,.45);
+    }
+    #frontendView .event-primary:hover { background: #fffaf1; }
+    #frontendView .event-secondary {
+      background: rgba(6, 45, 36, .45);
+      color: #eef7f1;
+      border-color: rgba(220, 233, 225, .25);
+    }
+    #frontendView .event-secondary:hover { background: rgba(20, 84, 64, .58); }
+    #frontendView input {
+      background: rgba(3, 31, 25, .48);
+      border-color: rgba(220, 233, 225, .28);
+      color: #fff;
+    }
+    #frontendView input::placeholder { color: rgba(220, 233, 225, .55); }
+    #frontendView input:focus {
+      border-color: var(--forest-200);
+      box-shadow: 0 0 0 2px rgba(185, 210, 196, .28);
+    }
   </style>
 </head>
-<body class="bg-gray-50 font-sans text-gray-800 antialiased overflow-x-hidden">
+<body class="bg-[#eef3ef] font-sans text-gray-800 antialiased overflow-x-hidden">
 
   <!-- ========================================== -->
   <!-- 載入中畫面 (Loading)                       -->
   <!-- ========================================== -->
-  <div id="loadingView" class="min-h-screen flex items-center justify-center bg-gray-50 fixed inset-0 z-[150]">
-    <div class="text-indigo-600 font-bold text-xl flex flex-col items-center gap-4">
+  <div id="loadingView" class="min-h-screen flex items-center justify-center bg-[#eef3ef] fixed inset-0 z-[150]">
+    <div class="text-[#145440] font-bold text-xl flex flex-col items-center gap-4">
       <i data-lucide="refresh-cw" class="w-8 h-8 animate-spin"></i>
       系統載入中...
     </div>
@@ -54,11 +100,11 @@
   <!-- ========================================== -->
   <!-- 前台畫面 (Frontend)                        -->
   <!-- ========================================== -->
-  <div id="frontendView" class="hidden-view min-h-screen flex items-center justify-center text-white bg-gradient-to-br from-red-600 to-orange-500">
-    <div class="w-full max-w-md h-screen sm:h-[85vh] bg-black/20 backdrop-blur-xl border border-white/20 sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
+  <div id="frontendView" class="hidden-view min-h-screen flex items-center justify-center text-white event-bg" style="background:radial-gradient(circle at 15% 12%,rgba(185,210,196,.18),transparent 34%),linear-gradient(145deg,#062d24 0%,#0b3b2f 48%,#145440 100%);">
+    <div class="event-shell w-full max-w-md h-screen sm:h-[85vh] backdrop-blur-xl border sm:rounded-2xl flex flex-col overflow-hidden relative" style="background:rgba(4,35,28,.38);border-color:rgba(220,233,225,.24);">
       
       <!-- Header -->
-      <div class="bg-black/20 text-white p-4 flex justify-between items-center shadow-md z-10 border-b border-white/10">
+      <div class="event-header text-white p-4 flex justify-between items-center shadow-md z-10 border-b">
         <div class="w-8"></div>
         <h1 class="text-lg font-bold tracking-widest">現場印製體驗</h1>
         <button onclick="showExitPrompt()" class="w-8 flex justify-end text-white/60 hover:text-white transition">
@@ -72,12 +118,12 @@
           <h3 class="text-xl font-bold text-white text-center mb-4">系統管理員登入</h3>
           <div>
             <label class="block text-sm text-gray-400 mb-2">請輸入管理員密碼</label>
-            <input type="password" id="exitPasswordInput" placeholder="輸入密碼" class="w-full p-3 bg-gray-900 border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            <input type="password" id="exitPasswordInput" placeholder="輸入密碼" class="w-full p-3 bg-gray-900 border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
           </div>
           <p id="exitPasswordError" class="text-red-500 text-sm hidden-view">密碼錯誤</p>
           <div class="flex gap-3 mt-6">
             <button onclick="hideExitPrompt()" class="flex-1 py-3 bg-gray-700 text-gray-300 rounded-xl font-medium hover:bg-gray-600 transition">取消</button>
-            <button onclick="verifyExitPassword()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium shadow-md hover:bg-blue-700 transition">確認登入</button>
+            <button onclick="verifyExitPassword()" class="flex-1 py-3 bg-emerald-700 text-white rounded-xl font-medium shadow-md hover:bg-emerald-800 transition">確認登入</button>
           </div>
         </div>
       </div>
@@ -91,8 +137,8 @@
             <h2 class="text-2xl font-bold text-white drop-shadow-md">客製帆布袋</h2>
             <p class="text-white/80 mt-2 text-sm drop-shadow-sm">選擇喜歡的圖案，加入您的專屬文字</p>
           </div>
-          <button onclick="switchFrontView('gift')" class="w-full py-4 bg-white text-red-600 hover:bg-gray-100 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105">開始製作</button>
-          <button onclick="switchFrontView('status')" class="w-full py-4 bg-black/20 hover:bg-black/30 text-white rounded-xl font-semibold text-lg shadow transition transform hover:scale-105 border border-white/20">查詢進度</button>
+          <button onclick="switchFrontView('gift')" class="event-primary w-full py-4 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105">開始製作</button>
+          <button onclick="switchFrontView('status')" class="event-secondary w-full py-4 rounded-xl font-semibold text-lg shadow transition transform hover:scale-105 border">查詢進度</button>
         </div>
 
         <!-- ================== 1. 圖案六選一 ================== -->
@@ -102,7 +148,7 @@
             <p class="text-sm text-white/70 mt-1">請從以下六款圖案中選擇一款</p>
           </div>
           <div id="designGrid" class="grid grid-cols-2 gap-3"></div>
-          <button onclick="switchFrontView('home')" class="w-full py-3 bg-black/20 text-white/90 border border-white/20 hover:bg-black/30 rounded-xl font-medium mt-4 transition">返回</button>
+          <button onclick="switchFrontView('home')" class="event-secondary w-full py-3 border rounded-xl font-medium mt-4 transition">返回</button>
         </div>
 
         <!-- ================== 2. 客製化文字 ================== -->
@@ -115,14 +161,14 @@
           <div class="space-y-2">
             <label class="text-sm text-white/80 font-medium">請輸入要印製的文字 (中、英文皆可)</label>
             <input type="text" id="inputText" placeholder="例如: 王大明 或 Mike Wang" class="w-full p-4 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-lg placeholder-white/50 shadow-inner" />
-            <p class="text-xs text-white/70 mt-1">文字將固定印製於 <strong id="displaySelectedGift" class="text-white drop-shadow-sm"></strong> 圖案下方</p>
+            <p class="text-xs text-white/70 mt-1">文字將固定印製於圖案下方</p>
           </div>
           
           <div id="textError" class="hidden-view p-3 bg-black/40 border border-red-400 text-red-200 rounded-lg flex items-center gap-2 text-sm"></div>
           
           <div class="flex gap-3 pt-4">
-            <button onclick="switchFrontView('gift')" class="flex-1 py-3 bg-black/20 text-white/90 border border-white/20 hover:bg-black/30 rounded-xl font-medium transition">上一步</button>
-            <button onclick="handleTextSubmit()" class="flex-1 py-3 bg-white text-red-600 hover:bg-gray-100 rounded-xl font-bold shadow-md transition">下一步</button>
+            <button onclick="switchFrontView('gift')" class="event-secondary flex-1 py-3 border rounded-xl font-medium transition">上一步</button>
+            <button onclick="handleTextSubmit()" class="event-primary flex-1 py-3 rounded-xl font-bold shadow-md transition">下一步</button>
           </div>
         </div>
 
@@ -142,8 +188,8 @@
           <div id="phoneError" class="hidden-view p-3 bg-black/40 border border-red-400 text-red-200 rounded-lg flex items-center gap-2 text-sm"></div>
           
           <div class="flex gap-3 pt-4">
-            <button onclick="switchFrontView('text')" class="flex-1 py-3 bg-black/20 text-white/90 border border-white/20 hover:bg-black/30 rounded-xl font-medium transition">上一步</button>
-            <button onclick="handlePhoneSubmit()" class="flex-1 py-3 bg-white text-red-600 hover:bg-gray-100 rounded-xl font-bold shadow-md transition">下一步</button>
+            <button onclick="switchFrontView('text')" class="event-secondary flex-1 py-3 border rounded-xl font-medium transition">上一步</button>
+            <button onclick="handlePhoneSubmit()" class="event-primary flex-1 py-3 rounded-xl font-bold shadow-md transition">下一步</button>
           </div>
         </div>
 
@@ -173,8 +219,8 @@
           <div id="submitError" class="hidden-view p-3 bg-black/40 border border-red-400 text-red-200 rounded-lg text-sm text-center"></div>
 
           <div class="flex gap-3 pt-2">
-            <button onclick="switchFrontView('phone')" class="flex-1 py-4 bg-black/20 text-white/90 border border-white/20 hover:bg-black/30 rounded-xl font-medium transition">修改資料</button>
-            <button onclick="submitOrder()" class="flex-1 py-4 bg-white text-red-600 hover:bg-gray-100 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105 flex items-center justify-center gap-2">
+            <button onclick="switchFrontView('phone')" class="event-secondary flex-1 py-4 border rounded-xl font-medium transition">修改資料</button>
+            <button onclick="submitOrder()" class="event-primary flex-1 py-4 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105 flex items-center justify-center gap-2">
               <i data-lucide="send" class="w-5 h-5 hidden" id="submitIcon"></i> 送出訂單
             </button>
           </div>
@@ -190,7 +236,7 @@
           <div class="bg-white/10 border border-white/20 p-4 rounded-xl text-white font-medium leading-relaxed backdrop-blur-sm">
             登記已完成！<br>請記住或截圖此號碼，並依現場工作人員指示領取。
           </div>
-          <button onclick="switchFrontView('home')" class="w-full py-4 bg-black/20 border border-white/20 text-white rounded-xl font-medium mt-4 hover:bg-black/30 transition">回首頁</button>
+          <button onclick="switchFrontView('home')" class="event-secondary w-full py-4 border rounded-xl font-medium mt-4 transition">回首頁</button>
         </div>
 
         <!-- ================== 查詢進度 ================== -->
@@ -204,7 +250,7 @@
 
           <div class="flex gap-2">
             <input type="text" id="searchSeq" placeholder="請輸入 3 碼序號 (如 001)" class="flex-1 p-4 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none placeholder-white/50 shadow-inner" />
-            <button onclick="handleSearch()" class="px-6 bg-white text-red-600 rounded-xl flex items-center justify-center hover:bg-gray-100 transition shadow-md">
+            <button onclick="handleSearch()" class="event-primary px-6 rounded-xl flex items-center justify-center transition shadow-md">
               <i data-lucide="search" class="w-5 h-5"></i>
             </button>
           </div>
@@ -214,7 +260,7 @@
              <!-- Javascript 動態插入查詢結果 -->
           </div>
           
-          <button onclick="switchFrontView('home')" class="w-full py-4 bg-black/20 hover:bg-black/30 text-white border border-white/20 rounded-xl font-medium mt-6 transition">返回首頁</button>
+          <button onclick="switchFrontView('home')" class="event-secondary w-full py-4 border rounded-xl font-medium mt-6 transition">返回首頁</button>
         </div>
 
       </div>
@@ -228,11 +274,11 @@
     <!-- Sidebar -->
     <div class="w-64 bg-gray-900 text-white flex flex-col shadow-xl z-20">
       <div class="p-6 border-b border-gray-800">
-        <h1 class="text-xl font-black tracking-wider text-blue-400">系統管理後台</h1>
+        <h1 class="text-xl font-black tracking-wider text-emerald-300">系統管理後台</h1>
         <p class="text-xs text-gray-500 mt-2">Desktop Manager</p>
       </div>
       <nav class="flex-1 p-4 space-y-2">
-          <button onclick="switchBackView('orders')" id="btnBackOrders" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-indigo-600 text-white shadow-lg shadow-indigo-900/50">
+          <button onclick="switchBackView('orders')" id="btnBackOrders" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-emerald-700 text-white shadow-lg shadow-emerald-950/50">
             <i data-lucide="list" class="w-5 h-5"></i> 訂單管理
           </button>
           <button onclick="switchBackView('system')" id="btnBackSystem" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white">
@@ -273,7 +319,7 @@
 
           <div class="flex flex-col items-end">
             <span class="text-slate-500 text-xs">下個流水號</span>
-            <span id="statNextSeq" class="font-bold text-indigo-600 text-lg">#001</span>
+            <span id="statNextSeq" class="font-bold text-emerald-700 text-lg">#001</span>
           </div>
 
         </div>
@@ -286,7 +332,7 @@
           <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
             <div class="relative w-full max-w-sm">
               <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-              <input type="text" id="backendSearchInput" onkeyup="window.renderOrdersTable()" placeholder="搜尋手機號碼、序號或印製文字..." class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm shadow-sm bg-white transition-all" />
+              <input type="text" id="backendSearchInput" onkeyup="window.renderOrdersTable()" placeholder="搜尋手機號碼、序號或印製文字..." class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600 focus:outline-none text-sm shadow-sm bg-white transition-all" />
             </div>
           </div>
           <div class="overflow-x-auto">
@@ -296,7 +342,7 @@
                   <th class="p-5 font-semibold w-24">序號</th>
                   <th class="p-5 font-semibold">手機號碼</th>
                   <th class="p-5 font-semibold">選擇圖案</th>
-                  <th class="p-5 font-semibold text-blue-600">印製文字</th>
+                  <th class="p-5 font-semibold text-emerald-700">印製文字</th>
                   <th class="p-5 font-semibold w-40">狀態</th>
                   <th class="p-5 font-semibold">備註</th>
                 </tr>
@@ -375,12 +421,12 @@
     let currentEditNoteId = null;
     
     const designs = [
-      { id: 'design-1', name: '圖案 1', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa2f6ba96960fcf42a8f/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-2', name: '圖案 2', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa2fb42b765abaf4ad21/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-3', name: '圖案 3', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa2f7f4de4a814c465d4/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-4', name: '圖案 4', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa3086bf46d81cf0b66a/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-5', name: '圖案 5', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa30e93a4555f4471782/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-6', name: '圖案 6', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa30451b3a711b60a46b/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' }
+      { id: 'design-A', name: 'A', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa2f6ba96960fcf42a8f/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-B', name: 'B', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa2fb42b765abaf4ad21/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-C', name: 'C', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa2f7f4de4a814c465d4/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-D', name: 'D', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa3086bf46d81cf0b66a/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-E', name: 'E', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa30e93a4555f4471782/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-F', name: 'F', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa30451b3a711b60a46b/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' }
     ];
 
     let orderDraft = { gift: '', designImage: '', text: '', phone: '' };
@@ -409,7 +455,7 @@
         btnContainer.appendChild(confirmBtn);
       } else {
         const okBtn = document.createElement('button');
-        okBtn.className = 'w-full py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-md';
+        okBtn.className = 'w-full py-2.5 bg-emerald-700 text-white rounded-xl font-bold hover:bg-emerald-800 transition shadow-md';
         okBtn.innerText = '我知道了';
         okBtn.onclick = () => document.getElementById('customModal').classList.add('hidden-view');
         btnContainer.appendChild(okBtn);
@@ -490,11 +536,11 @@
       if(view === 'orders') {
         document.getElementById('backOrdersView').classList.remove('hidden-view');
         document.getElementById('backHeaderTitle').innerText = '訂單總覽';
-        btnOrders.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-indigo-600 text-white shadow-lg shadow-indigo-900/50";
+        btnOrders.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-emerald-700 text-white shadow-lg shadow-emerald-950/50";
       } else {
         document.getElementById('backSystemView').classList.remove('hidden-view');
         document.getElementById('backHeaderTitle').innerText = '系統設定';
-        btnSystem.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-indigo-600 text-white shadow-lg shadow-indigo-900/50";
+        btnSystem.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-emerald-700 text-white shadow-lg shadow-emerald-950/50";
       }
       lucide.createIcons();
     };
@@ -502,13 +548,13 @@
     // --- 前台圖案選擇 ---
     const renderDesignGrid = () => {
       const grid = document.getElementById('designGrid');
-      grid.innerHTML = designs.map((design, index) => `
+      grid.innerHTML = designs.map((design) => `
         <button type="button" onclick="selectGift('${design.id}')" class="group bg-black/25 border-2 border-white/20 hover:border-white rounded-2xl overflow-hidden transition-all transform hover:-translate-y-1 text-left">
           <div class="aspect-square bg-white/95 flex items-center justify-center p-2">
             <img src="${design.image}" alt="${design.name}" class="w-full h-full object-contain" loading="eager" />
           </div>
           <div class="px-3 py-2.5 text-center bg-black/35 group-hover:bg-white/20 transition-colors">
-            <span class="font-bold text-sm text-white">款式 ${index + 1}</span>
+            <span class="font-bold text-sm text-white">${design.name}</span>
           </div>
         </button>
       `).join('');
@@ -519,7 +565,6 @@
       if (!selectedDesign) return;
       orderDraft.gift = selectedDesign.name;
       orderDraft.designImage = selectedDesign.image;
-      document.getElementById('displaySelectedGift').innerText = selectedDesign.name;
       switchFrontView('text');
     };
 
@@ -706,11 +751,11 @@
         else selectClass += "bg-red-50 text-red-700 border-red-200 hover:bg-red-100";
         
         let noteHtml = currentEditNoteId === order.id ? 
-          `<div class="flex gap-2 items-center"><input type="text" id="noteInput-${order.id}" class="border border-indigo-200 px-3 py-1.5 rounded-lg text-sm w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-inner" value="${order.note || ''}"><button onclick="saveOrderNote('${order.id}')" class="text-xs bg-indigo-600 text-white px-3 py-2 rounded-lg font-bold shadow-sm hover:bg-indigo-700 transition">儲存</button></div>` : 
-          `<div onclick="startEditNote('${order.id}')" class="flex items-center justify-between group-hover:bg-white p-2 -m-2 rounded-lg cursor-pointer transition-all border border-transparent group-hover:border-slate-200 group-hover:shadow-sm"><span class="text-slate-600 text-sm truncate max-w-[150px]">${order.note || `<span class="text-slate-400 italic">點擊新增備註...</span>`}</span><i data-lucide="edit-3" class="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors opacity-0 group-hover:opacity-100"></i></div>`;
+          `<div class="flex gap-2 items-center"><input type="text" id="noteInput-${order.id}" class="border border-emerald-200 px-3 py-1.5 rounded-lg text-sm w-full focus:ring-2 focus:ring-emerald-600 focus:outline-none shadow-inner" value="${order.note || ''}"><button onclick="saveOrderNote('${order.id}')" class="text-xs bg-emerald-700 text-white px-3 py-2 rounded-lg font-bold shadow-sm hover:bg-emerald-800 transition">儲存</button></div>` : 
+          `<div onclick="startEditNote('${order.id}')" class="flex items-center justify-between group-hover:bg-white p-2 -m-2 rounded-lg cursor-pointer transition-all border border-transparent group-hover:border-slate-200 group-hover:shadow-sm"><span class="text-slate-600 text-sm truncate max-w-[150px]">${order.note || `<span class="text-slate-400 italic">點擊新增備註...</span>`}</span><i data-lucide="edit-3" class="w-4 h-4 text-slate-300 group-hover:text-emerald-600 transition-colors opacity-0 group-hover:opacity-100"></i></div>`;
 
         html += `
-          <tr class="border-b border-slate-100 hover:bg-indigo-50/50 transition-colors group">
+          <tr class="border-b border-slate-100 hover:bg-emerald-50/60 transition-colors group">
             <td class="p-5 font-mono font-bold text-slate-700">#${order.sequenceId}</td>
             <td class="p-5 font-medium text-slate-800">${order.phone}</td>
             <td class="p-5 text-slate-600 font-medium">
@@ -719,7 +764,7 @@
                 <span>${order.gift || '-'}</span>
               </div>
             </td>
-            <td class="p-5 text-blue-700 font-bold">${order.customText || '-'}</td>
+            <td class="p-5 text-emerald-800 font-bold">${order.customText || '-'}</td>
             <td class="p-5"><select onchange="changeOrderStatus('${order.id}', this.value)" class="${selectClass}" style="background-image: url('data:image/svg+xml,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'none\\' viewBox=\\'0 0 20 20\\'%3e%3cpath stroke=\\'%236b7280\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M6 8l4 4 4-4\\'/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"><option value="處理中" ${order.status === '處理中' ? 'selected' : ''}>處理中</option><option value="完成" ${order.status === '完成' ? 'selected' : ''}>完成</option><option value="取消" ${order.status === '取消' ? 'selected' : ''}>取消 (解鎖)</option></select></td>
             <td class="p-5">${noteHtml}</td>
           </tr>`;
