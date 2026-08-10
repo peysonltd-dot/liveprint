@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- LivePrint Green UI v4 -->
+<!-- LivePrint Green UI v4 (Tablet Optimized) -->
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
@@ -101,14 +101,15 @@
   <!-- 前台畫面 (Frontend)                        -->
   <!-- ========================================== -->
   <div id="frontendView" class="hidden-view min-h-screen flex items-center justify-center text-white event-bg" style="background:radial-gradient(circle at 15% 12%,rgba(185,210,196,.18),transparent 34%),linear-gradient(145deg,#062d24 0%,#0b3b2f 48%,#145440 100%);">
-    <div class="event-shell w-full max-w-md h-screen sm:h-[85vh] backdrop-blur-xl border sm:rounded-2xl flex flex-col overflow-hidden relative" style="background:rgba(4,35,28,.38);border-color:rgba(220,233,225,.24);">
+    <!-- 優化：擴大 max-w 以適應平板直式尺寸 (max-w-lg md:max-w-xl) -->
+    <div class="event-shell w-full max-w-lg md:max-w-xl h-screen md:h-[90vh] backdrop-blur-xl border sm:rounded-2xl flex flex-col overflow-hidden relative" style="background:rgba(4,35,28,.38);border-color:rgba(220,233,225,.24);">
       
       <!-- Header -->
-      <div class="event-header text-white p-4 flex justify-between items-center shadow-md z-10 border-b">
+      <div class="event-header text-white p-5 flex justify-between items-center shadow-md z-10 border-b">
         <div class="w-8"></div>
-        <h1 class="text-lg font-bold tracking-widest">現場印製體驗</h1>
+        <h1 class="text-xl font-bold tracking-widest">現場印製體驗</h1>
         <button onclick="showExitPrompt()" class="w-8 flex justify-end text-white/60 hover:text-white transition">
-          <i data-lucide="settings" class="w-5 h-5"></i>
+          <i data-lucide="settings" class="w-6 h-6"></i>
         </button>
       </div>
 
@@ -128,139 +129,142 @@
         </div>
       </div>
 
-      <div class="flex-1 overflow-y-auto p-6 flex flex-col justify-center relative">
+      <div class="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col justify-center relative">
         
         <!-- ================== 前台首頁 ================== -->
-        <div id="frontHome" class="space-y-6 animate-fade-in">
+        <div id="frontHome" class="space-y-8 animate-fade-in">
           <div class="text-center">
-            <i data-lucide="gift" class="w-16 h-16 mx-auto text-white mb-4 drop-shadow-md"></i>
-            <h2 class="text-2xl font-bold text-white drop-shadow-md">客製帆布袋</h2>
-            <p class="text-white/80 mt-2 text-sm drop-shadow-sm">選擇喜歡的圖案，加入您的專屬文字</p>
+            <i data-lucide="gift" class="w-20 h-20 mx-auto text-white mb-6 drop-shadow-md"></i>
+            <h2 class="text-3xl font-bold text-white drop-shadow-md">客製帆布袋</h2>
+            <p class="text-white/80 mt-3 text-base drop-shadow-sm">選擇喜歡的圖案，加入您的專屬文字</p>
           </div>
-          <button onclick="switchFrontView('gift')" class="event-primary w-full py-4 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105">開始製作</button>
-          <button onclick="switchFrontView('status')" class="event-secondary w-full py-4 rounded-xl font-semibold text-lg shadow transition transform hover:scale-105 border">查詢進度</button>
+          <div class="space-y-4 max-w-sm mx-auto">
+            <button onclick="switchFrontView('gift')" class="event-primary w-full py-4 rounded-xl font-bold text-xl shadow-lg transition transform hover:scale-105">開始製作</button>
+            <button onclick="switchFrontView('status')" class="event-secondary w-full py-4 rounded-xl font-semibold text-lg shadow transition transform hover:scale-105 border">查詢進度</button>
+          </div>
         </div>
 
         <!-- ================== 1. 圖案六選一 ================== -->
         <div id="frontGift" class="hidden-view space-y-6 animate-fade-in">
-          <div>
-            <h2 class="text-xl font-bold text-white drop-shadow-md">選擇圖案</h2>
-            <p class="text-sm text-white/70 mt-1">請從以下六款圖案中選擇一款</p>
+          <div class="text-center md:text-left">
+            <h2 class="text-2xl font-bold text-white drop-shadow-md">選擇圖案</h2>
+            <p class="text-base text-white/70 mt-1">請從以下六款圖案中選擇一款</p>
           </div>
-          <div id="designGrid" class="grid grid-cols-2 gap-3"></div>
-          <button onclick="switchFrontView('home')" class="event-secondary w-full py-3 border rounded-xl font-medium mt-4 transition">返回</button>
+          <!-- 優化：在平板上改為 3 欄或保持較大的 2 欄間距 -->
+          <div id="designGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6"></div>
+          <button onclick="switchFrontView('home')" class="event-secondary w-full py-4 border rounded-xl font-medium mt-6 transition text-lg">返回</button>
         </div>
 
         <!-- ================== 2. 客製化文字 ================== -->
-        <div id="frontText" class="hidden-view space-y-6 animate-fade-in">
+        <div id="frontText" class="hidden-view space-y-8 animate-fade-in max-w-sm mx-auto w-full">
           <div class="flex items-center gap-3 text-white mb-2 drop-shadow-md">
-            <i data-lucide="pen-tool" class="w-6 h-6"></i>
-            <h2 class="text-xl font-bold">客製化文字</h2>
+            <i data-lucide="pen-tool" class="w-8 h-8"></i>
+            <h2 class="text-2xl font-bold">客製化文字</h2>
           </div>
           
-          <div class="space-y-2">
-            <label class="text-sm text-white/80 font-medium">請輸入要印製的文字 (中、英文皆可)</label>
-            <input type="text" id="inputText" placeholder="例如: 王大明 或 Mike Wang" class="w-full p-4 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-lg placeholder-white/50 shadow-inner" />
-            <p class="text-xs text-white/70 mt-1">文字將固定印製於圖案下方</p>
+          <div class="space-y-3">
+            <label class="text-base text-white/80 font-medium">請輸入要印製的文字 (中、英文皆可)</label>
+            <input type="text" id="inputText" placeholder="例如: 王大明 或 Mike Wang" class="w-full p-5 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-xl placeholder-white/50 shadow-inner" />
+            <p class="text-sm text-white/70 mt-1">文字將固定印製於圖案下方</p>
           </div>
           
-          <div id="textError" class="hidden-view p-3 bg-black/40 border border-red-400 text-red-200 rounded-lg flex items-center gap-2 text-sm"></div>
+          <div id="textError" class="hidden-view p-4 bg-black/40 border border-red-400 text-red-200 rounded-lg flex items-center gap-2 text-base"></div>
           
-          <div class="flex gap-3 pt-4">
-            <button onclick="switchFrontView('gift')" class="event-secondary flex-1 py-3 border rounded-xl font-medium transition">上一步</button>
-            <button onclick="handleTextSubmit()" class="event-primary flex-1 py-3 rounded-xl font-bold shadow-md transition">下一步</button>
+          <div class="flex gap-4 pt-6">
+            <button onclick="switchFrontView('gift')" class="event-secondary flex-1 py-4 border rounded-xl font-medium transition text-lg">上一步</button>
+            <button onclick="handleTextSubmit()" class="event-primary flex-1 py-4 rounded-xl font-bold shadow-md transition text-lg">下一步</button>
           </div>
         </div>
 
         <!-- ================== 3. 手機號碼 ================== -->
-        <div id="frontPhone" class="hidden-view space-y-6 animate-fade-in">
+        <div id="frontPhone" class="hidden-view space-y-8 animate-fade-in max-w-sm mx-auto w-full">
           <div class="flex items-center gap-3 text-white mb-2 drop-shadow-md">
-            <i data-lucide="phone" class="w-6 h-6"></i>
-            <h2 class="text-xl font-bold">聯絡資訊</h2>
+            <i data-lucide="phone" class="w-8 h-8"></i>
+            <h2 class="text-2xl font-bold">聯絡資訊</h2>
           </div>
 
-          <div class="space-y-2">
-            <label class="text-sm text-white/80 font-medium">請輸入您的手機號碼</label>
-            <input type="tel" id="inputPhone" placeholder="例如: 0912345678" class="w-full p-4 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-lg placeholder-white/50 shadow-inner" />
-            <p class="text-xs text-white/70 mt-1">僅作為此活動有需要時聯繫使用</p>
+          <div class="space-y-3">
+            <label class="text-base text-white/80 font-medium">請輸入您的手機號碼</label>
+            <input type="tel" id="inputPhone" placeholder="例如: 0912345678" class="w-full p-5 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-xl placeholder-white/50 shadow-inner" />
+            <p class="text-sm text-white/70 mt-1">僅作為此活動有需要時聯繫使用</p>
           </div>
           
-          <div id="phoneError" class="hidden-view p-3 bg-black/40 border border-red-400 text-red-200 rounded-lg flex items-center gap-2 text-sm"></div>
+          <div id="phoneError" class="hidden-view p-4 bg-black/40 border border-red-400 text-red-200 rounded-lg flex items-center gap-2 text-base"></div>
           
-          <div class="flex gap-3 pt-4">
-            <button onclick="switchFrontView('text')" class="event-secondary flex-1 py-3 border rounded-xl font-medium transition">上一步</button>
-            <button onclick="handlePhoneSubmit()" class="event-primary flex-1 py-3 rounded-xl font-bold shadow-md transition">下一步</button>
+          <div class="flex gap-4 pt-6">
+            <button onclick="switchFrontView('text')" class="event-secondary flex-1 py-4 border rounded-xl font-medium transition text-lg">上一步</button>
+            <button onclick="handlePhoneSubmit()" class="event-primary flex-1 py-4 rounded-xl font-bold shadow-md transition text-lg">下一步</button>
           </div>
         </div>
 
         <!-- ================== 4. 最後確認 ================== -->
-        <div id="frontConfirm" class="hidden-view space-y-6 animate-fade-in">
-          <h2 class="text-xl font-bold text-white border-b border-white/20 pb-2 text-center drop-shadow-md">請確認您的訂單資訊</h2>
+        <div id="frontConfirm" class="hidden-view space-y-8 animate-fade-in max-w-sm mx-auto w-full">
+          <h2 class="text-2xl font-bold text-white border-b border-white/20 pb-3 text-center drop-shadow-md">請確認您的訂單資訊</h2>
           
-          <div class="bg-black/30 rounded-2xl p-6 space-y-4 border border-white/20 shadow-inner">
+          <div class="bg-black/30 rounded-2xl p-6 md:p-8 space-y-5 border border-white/20 shadow-inner">
             <div>
-              <span class="block text-xs text-white/60 mb-1">選擇圖案</span>
-              <div class="font-bold text-lg text-white flex items-center gap-2">
-                <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+              <span class="block text-sm text-white/60 mb-2">選擇圖案</span>
+              <div class="font-bold text-xl text-white flex items-center gap-2">
+                <i data-lucide="check-circle-2" class="w-6 h-6"></i>
                 <span id="confirmGift">--</span>
               </div>
-              <img id="confirmDesignImage" alt="已選圖案預覽" class="mt-3 w-full max-h-44 object-contain rounded-xl bg-white/90 p-2" />
+              <img id="confirmDesignImage" alt="已選圖案預覽" class="mt-4 w-full max-h-56 object-contain rounded-xl bg-white/90 p-3" />
             </div>
-            <div class="border-t border-white/10 pt-4">
-              <span class="block text-xs text-white/60 mb-1">印製文字</span>
-              <div class="font-bold text-xl text-white" id="confirmText">--</div>
+            <div class="border-t border-white/10 pt-5">
+              <span class="block text-sm text-white/60 mb-2">印製文字</span>
+              <div class="font-bold text-2xl text-white" id="confirmText">--</div>
             </div>
-            <div class="border-t border-white/10 pt-4">
-              <span class="block text-xs text-white/60 mb-1">聯絡手機</span>
-              <div class="font-medium text-white/90 tracking-wider" id="confirmPhone">--</div>
+            <div class="border-t border-white/10 pt-5">
+              <span class="block text-sm text-white/60 mb-2">聯絡手機</span>
+              <div class="font-medium text-white/90 tracking-wider text-xl" id="confirmPhone">--</div>
             </div>
           </div>
 
-          <div id="submitError" class="hidden-view p-3 bg-black/40 border border-red-400 text-red-200 rounded-lg text-sm text-center"></div>
+          <div id="submitError" class="hidden-view p-4 bg-black/40 border border-red-400 text-red-200 rounded-lg text-base text-center"></div>
 
-          <div class="flex gap-3 pt-2">
-            <button onclick="switchFrontView('phone')" class="event-secondary flex-1 py-4 border rounded-xl font-medium transition">修改資料</button>
+          <div class="flex gap-4 pt-4">
+            <button onclick="switchFrontView('phone')" class="event-secondary flex-1 py-4 border rounded-xl font-medium transition text-lg">修改</button>
             <button onclick="submitOrder()" class="event-primary flex-1 py-4 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105 flex items-center justify-center gap-2">
-              <i data-lucide="send" class="w-5 h-5 hidden" id="submitIcon"></i> 送出訂單
+              <i data-lucide="send" class="w-6 h-6 hidden" id="submitIcon"></i> 送出訂單
             </button>
           </div>
         </div>
 
         <!-- ================== 5. 成功畫面 ================== -->
-        <div id="frontSuccess" class="hidden-view space-y-8 text-center animate-fade-in py-8">
-          <i data-lucide="check-circle" class="w-24 h-24 mx-auto text-white drop-shadow-lg mb-4"></i>
+        <div id="frontSuccess" class="hidden-view space-y-10 text-center animate-fade-in py-10 max-w-sm mx-auto w-full">
+          <i data-lucide="check-circle" class="w-32 h-32 mx-auto text-white drop-shadow-lg mb-4"></i>
           <div>
-            <p class="text-white/80 font-medium mb-1 drop-shadow-sm">您的專屬序號</p>
-            <div id="displaySequence" class="text-6xl font-black text-white tracking-wider bg-black/20 py-4 rounded-2xl border border-white/20 shadow-inner">000</div>
+            <p class="text-white/80 font-medium mb-2 text-lg drop-shadow-sm">您的專屬序號</p>
+            <div id="displaySequence" class="text-7xl font-black text-white tracking-wider bg-black/20 py-6 rounded-2xl border border-white/20 shadow-inner">000</div>
           </div>
-          <div class="bg-white/10 border border-white/20 p-4 rounded-xl text-white font-medium leading-relaxed backdrop-blur-sm">
+          <div class="bg-white/10 border border-white/20 p-5 rounded-xl text-white font-medium leading-relaxed backdrop-blur-sm text-lg">
             登記已完成！<br>請記住或截圖此號碼，並依現場工作人員指示領取。
           </div>
-          <button onclick="switchFrontView('home')" class="event-secondary w-full py-4 border rounded-xl font-medium mt-4 transition">回首頁</button>
+          <button onclick="switchFrontView('home')" class="event-secondary w-full py-4 border rounded-xl font-medium mt-6 transition text-lg">回首頁</button>
         </div>
 
         <!-- ================== 查詢進度 ================== -->
-        <div id="frontStatus" class="hidden-view space-y-6 animate-fade-in">
-          <h2 class="text-2xl font-bold text-white border-b border-white/20 pb-2 drop-shadow-md">查詢進度</h2>
+        <div id="frontStatus" class="hidden-view space-y-8 animate-fade-in max-w-sm mx-auto w-full">
+          <h2 class="text-2xl font-bold text-white border-b border-white/20 pb-3 drop-shadow-md">查詢進度</h2>
           
-          <div class="bg-black/20 p-4 rounded-xl border border-white/20 text-center shadow-inner">
-            <p class="text-white/70 text-sm mb-1">目前最新完成序號</p>
-            <p id="displayLastCompleted" class="text-3xl font-black text-white drop-shadow-md">--</p>
+          <div class="bg-black/20 p-6 rounded-xl border border-white/20 text-center shadow-inner">
+            <p class="text-white/70 text-base mb-2">目前最新完成序號</p>
+            <p id="displayLastCompleted" class="text-5xl font-black text-white drop-shadow-md">--</p>
           </div>
 
-          <div class="flex gap-2">
-            <input type="text" id="searchSeq" placeholder="請輸入 3 碼序號 (如 001)" class="flex-1 p-4 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none placeholder-white/50 shadow-inner" />
-            <button onclick="handleSearch()" class="event-primary px-6 rounded-xl flex items-center justify-center transition shadow-md">
-              <i data-lucide="search" class="w-5 h-5"></i>
+          <div class="flex gap-3">
+            <input type="text" id="searchSeq" placeholder="輸入 3 碼序號 (如 001)" class="flex-1 p-4 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none placeholder-white/50 shadow-inner text-lg" />
+            <button onclick="handleSearch()" class="event-primary px-8 rounded-xl flex items-center justify-center transition shadow-md">
+              <i data-lucide="search" class="w-6 h-6"></i>
             </button>
           </div>
-          <div id="searchError" class="hidden-view p-3 bg-black/40 border border-red-400 text-red-200 rounded-lg text-sm"></div>
+          <div id="searchError" class="hidden-view p-4 bg-black/40 border border-red-400 text-red-200 rounded-lg text-base"></div>
           
           <div id="searchResultCard" class="hidden-view mt-6 bg-black/30 border border-white/20 rounded-2xl shadow-sm overflow-hidden">
              <!-- Javascript 動態插入查詢結果 -->
           </div>
           
-          <button onclick="switchFrontView('home')" class="event-secondary w-full py-4 border rounded-xl font-medium mt-6 transition">返回首頁</button>
+          <button onclick="switchFrontView('home')" class="event-secondary w-full py-4 border rounded-xl font-medium mt-8 transition text-lg">返回首頁</button>
         </div>
 
       </div>
@@ -394,7 +398,6 @@
   <!-- 應用程式邏輯 (Vanilla JS + Firebase Module)-->
   <!-- ========================================== -->
   <script type="module">
-    // 引入 runTransaction 來處理高併發序號不重複的問題
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     import { getFirestore, collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -417,16 +420,17 @@
 
     // --- 全域狀態 ---
     let orders = [];
-    let sequenceCounter = 1; // 供 UI 顯示使用
+    let sequenceCounter = 1;
     let currentEditNoteId = null;
     
+    // 更新為新的商品圖 URLs 
     const designs = [
-      { id: 'design-A', name: 'A', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa2f6ba96960fcf42a8f/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-B', name: 'B', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa2fb42b765abaf4ad21/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-C', name: 'C', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa2f7f4de4a814c465d4/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-D', name: 'D', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa3086bf46d81cf0b66a/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-E', name: 'E', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa30e93a4555f4471782/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-F', name: 'F', image: 'https://img.shoplineapp.com/media/image_clips/6a71aa30451b3a711b60a46b/original.png?1785834030=&owner_id=66221c5c384dbb002ec45c18' }
+      { id: 'design-A', name: 'A', image: 'https://img.shoplineapp.com/media/image_clips/6a799423a288b3965de87f0b/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-B', name: 'B', image: 'https://img.shoplineapp.com/media/image_clips/6a799423137eec511f339525/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-C', name: 'C', image: 'https://img.shoplineapp.com/media/image_clips/6a79942301272bff46e1496d/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-D', name: 'D', image: 'https://img.shoplineapp.com/media/image_clips/6a79942300e653bd791bd161/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-E', name: 'E', image: 'https://img.shoplineapp.com/media/image_clips/6a79942379d0de59e5072fcc/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-F', name: 'F', image: 'https://img.shoplineapp.com/media/image_clips/6a799423a40b6b4e5b6a7759/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' }
     ];
 
     let orderDraft = { gift: '', designImage: '', text: '', phone: '' };
@@ -549,12 +553,12 @@
     const renderDesignGrid = () => {
       const grid = document.getElementById('designGrid');
       grid.innerHTML = designs.map((design) => `
-        <button type="button" onclick="selectGift('${design.id}')" class="group bg-black/25 border-2 border-white/20 hover:border-white rounded-2xl overflow-hidden transition-all transform hover:-translate-y-1 text-left">
-          <div class="aspect-square bg-white/95 flex items-center justify-center p-2">
+        <button type="button" onclick="selectGift('${design.id}')" class="group bg-black/25 border-2 border-white/20 hover:border-white rounded-3xl overflow-hidden transition-all transform hover:-translate-y-1 text-left">
+          <div class="aspect-square bg-white/95 flex items-center justify-center p-3">
             <img src="${design.image}" alt="${design.name}" class="w-full h-full object-contain" loading="eager" />
           </div>
-          <div class="px-3 py-2.5 text-center bg-black/35 group-hover:bg-white/20 transition-colors">
-            <span class="font-bold text-sm text-white">${design.name}</span>
+          <div class="px-4 py-3 text-center bg-black/40 group-hover:bg-white/20 transition-colors">
+            <span class="font-bold text-lg text-white">${design.name}</span>
           </div>
         </button>
       `).join('');
@@ -573,7 +577,7 @@
       const errBox = document.getElementById('textError');
       errBox.classList.add('hidden-view');
       if (!text) {
-        errBox.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5"></i> 請輸入要印製的文字`;
+        errBox.innerHTML = `<i data-lucide="x-circle" class="w-6 h-6"></i> 請輸入要印製的文字`;
         errBox.classList.remove('hidden-view'); lucide.createIcons(); return;
       }
       orderDraft.text = text;
@@ -585,12 +589,12 @@
       const errBox = document.getElementById('phoneError');
       errBox.classList.add('hidden-view');
       if (!phone) {
-        errBox.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5"></i> 請輸入手機號碼`;
+        errBox.innerHTML = `<i data-lucide="x-circle" class="w-6 h-6"></i> 請輸入手機號碼`;
         errBox.classList.remove('hidden-view'); lucide.createIcons(); return;
       }
       const existingOrder = orders.find(o => o.phone === phone && o.status !== '取消');
       if (existingOrder) {
-        errBox.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5"></i> 此號碼已登記過序號 (#${existingOrder.sequenceId})`;
+        errBox.innerHTML = `<i data-lucide="x-circle" class="w-6 h-6"></i> 此號碼已登記過序號 (#${existingOrder.sequenceId})`;
         errBox.classList.remove('hidden-view'); lucide.createIcons(); return;
       }
       orderDraft.phone = phone;
@@ -601,7 +605,7 @@
       switchFrontView('confirm');
     };
 
-    // 修改：使用 runTransaction 處理高併發序號不重複
+    // 使用 runTransaction 處理高併發序號不重複
     window.submitOrder = async () => {
       const errBox = document.getElementById('submitError');
       errBox.classList.add('hidden-view');
@@ -610,7 +614,6 @@
       document.getElementById('submitIcon').classList.remove('hidden');
 
       try {
-        // 利用 Firebase Transaction 確保號碼牌絕對不重複
         const finalSeqStr = await runTransaction(db, async (transaction) => {
           const counterRef = doc(db, 'artifacts', appId, 'public', 'data', 'system', 'counter');
           const counterSnap = await transaction.get(counterRef);
@@ -619,16 +622,13 @@
           if (counterSnap.exists() && counterSnap.data().currentSeq !== undefined) {
              nextSeq = counterSnap.data().currentSeq + 1;
           } else if (orders.length > 0) {
-             // 若無計數器但有歷史訂單，利用歷史最高序號推算 (防呆)
              nextSeq = Math.max(...orders.map(o => parseInt(o.sequenceId, 10))) + 1;
           }
 
-          // 更新排隊號碼機
           transaction.set(counterRef, { currentSeq: nextSeq }, { merge: true });
 
           const seqStr = String(nextSeq).padStart(3, '0');
           
-          // 寫入訂單資料
           const newOrderRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'));
           const newOrder = {
             sequenceId: seqStr,
@@ -643,10 +643,9 @@
           };
           
           transaction.set(newOrderRef, newOrder);
-          return seqStr; // 回傳成功取得的序號
+          return seqStr; 
         });
 
-        // 交易成功，顯示成功畫面
         document.getElementById('displaySequence').innerText = finalSeqStr;
         document.getElementById('submitIcon').classList.add('hidden');
         switchFrontView('success');
@@ -673,14 +672,14 @@
         if (order.status === '取消') statusHtml = `<span class="bg-red-500/20 text-red-200 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 border border-red-500/50"><i data-lucide="x-circle" class="w-4 h-4"></i>取消</span>`;
         const maskedPhone = order.phone.replace(/(\d{4})\d{3}(\d{3})/, '$1***$2');
         resultCard.innerHTML = `
-          <div class="bg-black/40 px-4 py-3 border-b border-white/10 flex justify-between items-center">
+          <div class="bg-black/40 px-5 py-4 border-b border-white/10 flex justify-between items-center text-lg">
             <span class="font-bold text-white drop-shadow-sm">序號 #${order.sequenceId}</span>
             ${statusHtml}
           </div>
-          <div class="p-4 space-y-3 text-sm">
-            <div class="flex justify-between border-b border-white/10 pb-2"><span class="text-white/70">選擇圖案</span><span class="font-medium text-white">${order.gift || '未紀錄'}</span></div>
-            <div class="flex justify-between border-b border-white/10 pb-2"><span class="text-white/70">印製文字</span><span class="font-bold text-white drop-shadow-sm">${order.customText || '未紀錄'}</span></div>
-            <div class="flex justify-between border-b border-white/10 pb-2"><span class="text-white/70">聯絡手機</span><span class="text-white/90">${maskedPhone}</span></div>
+          <div class="p-5 space-y-4 text-base">
+            <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">選擇圖案</span><span class="font-medium text-white">${order.gift || '未紀錄'}</span></div>
+            <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">印製文字</span><span class="font-bold text-white drop-shadow-sm">${order.customText || '未紀錄'}</span></div>
+            <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">聯絡手機</span><span class="text-white/90">${maskedPhone}</span></div>
             <div class="flex justify-between"><span class="text-white/70">建立時間</span><span class="text-white/60">${order.createdAt}</span></div>
           </div>
         `;
@@ -705,12 +704,10 @@
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
     };
 
-    // 修改：重置時連同發號碼機一起歸零
     window.confirmReset = () => {
       showModal('警告', '確定要清空所有訂單並重置嗎？', 'confirm', async () => {
         try {
           for (const order of orders) { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', order.id)); }
-          // 重置雲端排隊計數器
           await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'system', 'counter'), { currentSeq: 0 });
           showModal('成功', '系統資料與發號碼機已成功重置。');
         } catch(err) { showModal('錯誤', '重置發生異常。'); }
@@ -782,14 +779,12 @@
           document.getElementById('loadingView').classList.add('hidden-view');
           switchAppMode('frontend');
 
-          // 監聽訂單變化
           onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), (snapshot) => {
             orders = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
             document.getElementById('statPending').innerText = orders.filter(o => o.status === '處理中').length;
             document.getElementById('statCompleted').innerText = orders.filter(o => o.status === '完成').length;
             
-            // 更新 UI 顯示用的下個流水號（不再作為真實寫入依據）
             if (orders.length > 0) {
               const maxSeq = Math.max(...orders.map(o => parseInt(o.sequenceId, 10)));
               sequenceCounter = maxSeq + 1;
