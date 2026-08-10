@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- LivePrint Green UI v4 (Tablet Optimized) -->
+<!-- LivePrint Green UI v5 (Tablet 1-Column Scrolling) -->
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
@@ -101,11 +101,10 @@
   <!-- 前台畫面 (Frontend)                        -->
   <!-- ========================================== -->
   <div id="frontendView" class="hidden-view min-h-screen flex items-center justify-center text-white event-bg" style="background:radial-gradient(circle at 15% 12%,rgba(185,210,196,.18),transparent 34%),linear-gradient(145deg,#062d24 0%,#0b3b2f 48%,#145440 100%);">
-    <!-- 優化：擴大 max-w 以適應平板直式尺寸 (max-w-lg md:max-w-xl) -->
     <div class="event-shell w-full max-w-lg md:max-w-xl h-screen md:h-[90vh] backdrop-blur-xl border sm:rounded-2xl flex flex-col overflow-hidden relative" style="background:rgba(4,35,28,.38);border-color:rgba(220,233,225,.24);">
       
       <!-- Header -->
-      <div class="event-header text-white p-5 flex justify-between items-center shadow-md z-10 border-b">
+      <div class="event-header text-white p-5 flex justify-between items-center shadow-md z-10 border-b shrink-0">
         <div class="w-8"></div>
         <h1 class="text-xl font-bold tracking-widest">現場印製體驗</h1>
         <button onclick="showExitPrompt()" class="w-8 flex justify-end text-white/60 hover:text-white transition">
@@ -129,34 +128,39 @@
         </div>
       </div>
 
-      <div class="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col justify-center relative">
+      <!-- 捲動容器：移除了 justify-center 避免過長內容被截斷，並透過內層 div 設定 min-h-full 來達到短內容置中效果 -->
+      <div class="flex-1 overflow-y-auto p-6 md:p-8 relative">
         
         <!-- ================== 前台首頁 ================== -->
-        <div id="frontHome" class="space-y-8 animate-fade-in">
+        <div id="frontHome" class="space-y-8 animate-fade-in min-h-full flex flex-col justify-center">
           <div class="text-center">
             <i data-lucide="gift" class="w-20 h-20 mx-auto text-white mb-6 drop-shadow-md"></i>
             <h2 class="text-3xl font-bold text-white drop-shadow-md">客製帆布袋</h2>
             <p class="text-white/80 mt-3 text-base drop-shadow-sm">選擇喜歡的圖案，加入您的專屬文字</p>
           </div>
-          <div class="space-y-4 max-w-sm mx-auto">
+          <div class="space-y-4 max-w-sm mx-auto w-full">
             <button onclick="switchFrontView('gift')" class="event-primary w-full py-4 rounded-xl font-bold text-xl shadow-lg transition transform hover:scale-105">開始製作</button>
             <button onclick="switchFrontView('status')" class="event-secondary w-full py-4 rounded-xl font-semibold text-lg shadow transition transform hover:scale-105 border">查詢進度</button>
           </div>
         </div>
 
         <!-- ================== 1. 圖案六選一 ================== -->
-        <div id="frontGift" class="hidden-view space-y-6 animate-fade-in">
-          <div class="text-center md:text-left">
+        <!-- 修改為單欄滑動，並加了 py-4 增加上下留白 -->
+        <div id="frontGift" class="hidden-view space-y-6 animate-fade-in min-h-full flex flex-col justify-center py-4">
+          <div class="text-center">
             <h2 class="text-2xl font-bold text-white drop-shadow-md">選擇圖案</h2>
-            <p class="text-base text-white/70 mt-1">請從以下六款圖案中選擇一款</p>
+            <p class="text-base text-white/70 mt-1">請從以下圖案中選擇一款（可上下滑動）</p>
           </div>
-          <!-- 優化：在平板上改為 3 欄或保持較大的 2 欄間距 -->
-          <div id="designGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6"></div>
-          <button onclick="switchFrontView('home')" class="event-secondary w-full py-4 border rounded-xl font-medium mt-6 transition text-lg">返回</button>
+          <!-- 改為單欄佈局 (grid-cols-1)，限制寬度讓平板視覺比例舒適 -->
+          <div id="designGrid" class="grid grid-cols-1 gap-6 max-w-sm mx-auto w-full"></div>
+          
+          <div class="max-w-sm mx-auto w-full pt-4">
+            <button onclick="switchFrontView('home')" class="event-secondary w-full py-4 border rounded-xl font-medium transition text-lg">返回</button>
+          </div>
         </div>
 
         <!-- ================== 2. 客製化文字 ================== -->
-        <div id="frontText" class="hidden-view space-y-8 animate-fade-in max-w-sm mx-auto w-full">
+        <div id="frontText" class="hidden-view space-y-8 animate-fade-in max-w-sm mx-auto w-full min-h-full flex flex-col justify-center">
           <div class="flex items-center gap-3 text-white mb-2 drop-shadow-md">
             <i data-lucide="pen-tool" class="w-8 h-8"></i>
             <h2 class="text-2xl font-bold">客製化文字</h2>
@@ -177,7 +181,7 @@
         </div>
 
         <!-- ================== 3. 手機號碼 ================== -->
-        <div id="frontPhone" class="hidden-view space-y-8 animate-fade-in max-w-sm mx-auto w-full">
+        <div id="frontPhone" class="hidden-view space-y-8 animate-fade-in max-w-sm mx-auto w-full min-h-full flex flex-col justify-center">
           <div class="flex items-center gap-3 text-white mb-2 drop-shadow-md">
             <i data-lucide="phone" class="w-8 h-8"></i>
             <h2 class="text-2xl font-bold">聯絡資訊</h2>
@@ -198,7 +202,7 @@
         </div>
 
         <!-- ================== 4. 最後確認 ================== -->
-        <div id="frontConfirm" class="hidden-view space-y-8 animate-fade-in max-w-sm mx-auto w-full">
+        <div id="frontConfirm" class="hidden-view space-y-8 animate-fade-in max-w-sm mx-auto w-full min-h-full flex flex-col justify-center py-4">
           <h2 class="text-2xl font-bold text-white border-b border-white/20 pb-3 text-center drop-shadow-md">請確認您的訂單資訊</h2>
           
           <div class="bg-black/30 rounded-2xl p-6 md:p-8 space-y-5 border border-white/20 shadow-inner">
@@ -231,7 +235,7 @@
         </div>
 
         <!-- ================== 5. 成功畫面 ================== -->
-        <div id="frontSuccess" class="hidden-view space-y-10 text-center animate-fade-in py-10 max-w-sm mx-auto w-full">
+        <div id="frontSuccess" class="hidden-view space-y-10 text-center animate-fade-in py-10 max-w-sm mx-auto w-full min-h-full flex flex-col justify-center">
           <i data-lucide="check-circle" class="w-32 h-32 mx-auto text-white drop-shadow-lg mb-4"></i>
           <div>
             <p class="text-white/80 font-medium mb-2 text-lg drop-shadow-sm">您的專屬序號</p>
@@ -244,7 +248,7 @@
         </div>
 
         <!-- ================== 查詢進度 ================== -->
-        <div id="frontStatus" class="hidden-view space-y-8 animate-fade-in max-w-sm mx-auto w-full">
+        <div id="frontStatus" class="hidden-view space-y-8 animate-fade-in max-w-sm mx-auto w-full min-h-full flex flex-col justify-center py-4">
           <h2 class="text-2xl font-bold text-white border-b border-white/20 pb-3 drop-shadow-md">查詢進度</h2>
           
           <div class="bg-black/20 p-6 rounded-xl border border-white/20 text-center shadow-inner">
@@ -363,7 +367,6 @@
           
           <!-- 左側：資料匯出 -->
           <div class="space-y-8">
-            <!-- 資料匯出區塊 -->
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
               <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3"><i data-lucide="download" class="w-6 h-6 text-green-600"></i> 資料匯出</h3>
               <div class="space-y-4 text-slate-600 text-sm mb-6 leading-relaxed">
@@ -373,7 +376,6 @@
                 <i data-lucide="file-spreadsheet" class="w-5 h-5"></i> 下載最新訂單資料
               </button>
             </div>
-
           </div>
 
           <!-- 右側：危險操作區塊 -->
@@ -389,7 +391,6 @@
           </div>
           
         </div>
-
       </main>
     </div>
   </div>
@@ -418,12 +419,10 @@
     const db = getFirestore(app);
     const appId = "liveprint-canvas-event";
 
-    // --- 全域狀態 ---
     let orders = [];
     let sequenceCounter = 1;
     let currentEditNoteId = null;
     
-    // 更新為新的商品圖 URLs 
     const designs = [
       { id: 'design-A', name: 'A', image: 'https://img.shoplineapp.com/media/image_clips/6a799423a288b3965de87f0b/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
       { id: 'design-B', name: 'B', image: 'https://img.shoplineapp.com/media/image_clips/6a799423137eec511f339525/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
@@ -435,7 +434,6 @@
 
     let orderDraft = { gift: '', designImage: '', text: '', phone: '' };
 
-    // --- 全域對話框模組 ---
     window.showModal = (title, message, type = 'alert', onConfirm = null) => {
       document.getElementById('modalTitle').innerText = title;
       document.getElementById('modalMessage').innerText = message;
@@ -468,7 +466,6 @@
       document.getElementById('customModal').classList.remove('hidden-view');
     };
 
-    // --- 畫面切換控制 ---
     window.switchAppMode = (mode) => {
       document.getElementById('frontendView').classList.add('hidden-view');
       document.getElementById('backendView').classList.add('hidden-view');
@@ -484,7 +481,6 @@
       lucide.createIcons();
     };
 
-    // 密碼保護
     window.showExitPrompt = () => {
       document.getElementById('exitPasswordInput').value = '';
       document.getElementById('exitPasswordError').classList.add('hidden-view');
@@ -500,7 +496,6 @@
     };
     document.getElementById('exitPasswordInput').addEventListener('keypress', e => { if (e.key === 'Enter') verifyExitPassword(); });
 
-    // 前台分頁
     window.switchFrontView = (view) => {
       const views = ['frontHome', 'frontGift', 'frontText', 'frontPhone', 'frontConfirm', 'frontSuccess', 'frontStatus'];
       views.forEach(v => document.getElementById(v).classList.add('hidden-view'));
@@ -528,7 +523,6 @@
       lucide.createIcons();
     };
 
-    // 後台分頁
     window.switchBackView = (view) => {
       document.getElementById('backOrdersView').classList.add('hidden-view');
       document.getElementById('backSystemView').classList.add('hidden-view');
@@ -549,16 +543,16 @@
       lucide.createIcons();
     };
 
-    // --- 前台圖案選擇 ---
+    // --- 圖案渲染修改：適應單欄高度 ---
     const renderDesignGrid = () => {
       const grid = document.getElementById('designGrid');
       grid.innerHTML = designs.map((design) => `
-        <button type="button" onclick="selectGift('${design.id}')" class="group bg-black/25 border-2 border-white/20 hover:border-white rounded-3xl overflow-hidden transition-all transform hover:-translate-y-1 text-left">
-          <div class="aspect-square bg-white/95 flex items-center justify-center p-3">
-            <img src="${design.image}" alt="${design.name}" class="w-full h-full object-contain" loading="eager" />
+        <button type="button" onclick="selectGift('${design.id}')" class="group bg-black/25 border-2 border-white/20 hover:border-white rounded-3xl overflow-hidden transition-all transform hover:-translate-y-1 text-left flex flex-col">
+          <div class="aspect-square w-full bg-white/95 flex items-center justify-center p-6">
+            <img src="${design.image}" alt="${design.name}" class="w-full h-full object-contain" loading="lazy" />
           </div>
-          <div class="px-4 py-3 text-center bg-black/40 group-hover:bg-white/20 transition-colors">
-            <span class="font-bold text-lg text-white">${design.name}</span>
+          <div class="px-6 py-4 text-center bg-black/40 group-hover:bg-white/20 transition-colors w-full">
+            <span class="font-bold text-2xl text-white">${design.name}</span>
           </div>
         </button>
       `).join('');
@@ -605,12 +599,10 @@
       switchFrontView('confirm');
     };
 
-    // 使用 runTransaction 處理高併發序號不重複
     window.submitOrder = async () => {
       const errBox = document.getElementById('submitError');
       errBox.classList.add('hidden-view');
       
-      // UI 處理中防呆
       document.getElementById('submitIcon').classList.remove('hidden');
 
       try {
@@ -690,8 +682,6 @@
       }
     };
 
-    // --- 後台儲存與功能 ---
-    
     window.handleExportCSV = () => {
       if(orders.length === 0) { showModal('無法匯出', '目前沒有訂單。'); return; }
       const headers = ["序號", "手機號碼", "選擇圖案", "圖案網址", "印製文字", "狀態", "備註", "建立時間"];
@@ -770,7 +760,6 @@
     };
     window.renderOrdersTable = renderOrdersTable;
 
-    // --- 系統初始化 ---
     const initApp = async () => {
       try { await signInAnonymously(auth); } catch (error) { console.error("Auth error:", error); }
 
