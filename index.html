@@ -566,12 +566,12 @@
     let currentEditNoteId = null;
     
     const designs = [
-      { id: 'design-A', name: 'A', textTop: '83.5%', image: 'https://img.shoplineapp.com/media/image_clips/6a799423a288b3965de87f0b/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-B', name: 'B', textTop: '83.5%', image: 'https://img.shoplineapp.com/media/image_clips/6a799423137eec511f339525/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-C', name: 'C', textTop: '76.5%', image: 'https://img.shoplineapp.com/media/image_clips/6a79942301272bff46e1496d/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-D', name: 'D', textTop: '94.2%', image: 'https://img.shoplineapp.com/media/image_clips/6a79942300e653bd791bd161/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-E', name: 'E', textTop: '94.2%', image: 'https://img.shoplineapp.com/media/image_clips/6a79942379d0de59e5072fcc/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
-      { id: 'design-F', name: 'F', textTop: '85.5%', image: 'https://img.shoplineapp.com/media/image_clips/6a799423a40b6b4e5b6a7759/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' }
+      { id: 'design-A', name: 'A', textTop: '82.5%', image: 'https://img.shoplineapp.com/media/image_clips/6a799423a288b3965de87f0b/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-B', name: 'B', textTop: '82.5%', image: 'https://img.shoplineapp.com/media/image_clips/6a799423137eec511f339525/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-C', name: 'C', textTop: '75.5%', image: 'https://img.shoplineapp.com/media/image_clips/6a79942301272bff46e1496d/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-D', name: 'D', textTop: '93.5%', image: 'https://img.shoplineapp.com/media/image_clips/6a79942300e653bd791bd161/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-E', name: 'E', textTop: '93.5%', image: 'https://img.shoplineapp.com/media/image_clips/6a79942379d0de59e5072fcc/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
+      { id: 'design-F', name: 'F', textTop: '84.5%', image: 'https://img.shoplineapp.com/media/image_clips/6a799423a40b6b4e5b6a7759/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' }
     ];
 
     const fontOptions = {
@@ -616,18 +616,18 @@
       if (!element) return;
       const length = Array.from(text || '').length;
       const frameWidth = element.closest('.mockup-frame')?.clientWidth || 384;
-      let ratio = .0125;
-      let minSize = 4;
-      let maxSize = 6;
+      let ratio = .021;
+      let minSize = 7;
+      let maxSize = 10;
 
       if (length > 14) {
-        ratio = .0082;
-        minSize = 3;
-        maxSize = 4;
+        ratio = .014;
+        minSize = 5;
+        maxSize = 7;
       } else if (length > 8) {
-        ratio = .0105;
-        minSize = 3.5;
-        maxSize = 5;
+        ratio = .017;
+        minSize = 6;
+        maxSize = 8.5;
       }
 
       const fontSize = Math.min(maxSize, Math.max(minSize, frameWidth * ratio));
@@ -637,6 +637,7 @@
     const positionMockupText = (element, giftName) => {
       if (!element) return;
       const design = designs.find(item => item.name === giftName);
+      element.style.left = '51.3%';
       element.style.top = design?.textTop || '87.2%';
     };
 
