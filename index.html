@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- LivePrint Green UI v5 (Tablet 1-Column Scrolling) -->
+<!-- LivePrint Green UI v5.1 (Noto Sans TC 900 Default) -->
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
@@ -137,6 +137,11 @@
     .font-cooper {
       font-family: "Cooper Md BT", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
       font-weight: 500;
+      font-style: normal;
+    }
+    .font-noto-900 {
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-weight: 900;
       font-style: normal;
     }
     .font-centra {
@@ -330,11 +335,15 @@
 
           <div class="space-y-3">
             <div class="flex items-center justify-between gap-3">
-              <label class="text-base text-white/80 font-medium">選擇英文字體</label>
-              <span class="text-xs text-white/60">中文固定思源黑體</span>
+              <label class="text-base text-white/80 font-medium">選擇字體</label>
+              <span class="text-xs text-white/60">預設 Noto Sans TC 900</span>
             </div>
-            <div class="grid grid-cols-2 gap-3" role="radiogroup" aria-label="選擇英文字體">
-              <button type="button" id="fontOptionCooper" onclick="selectFont('cooper')" class="font-option is-selected rounded-xl p-4 text-left" role="radio" aria-checked="true">
+            <div class="grid grid-cols-2 gap-3" role="radiogroup" aria-label="選擇字體">
+              <button type="button" id="fontOptionNoto900" onclick="selectFont('noto900')" class="font-option is-selected col-span-2 rounded-xl p-4 text-left" role="radio" aria-checked="true">
+                <span class="block text-xs opacity-70 mb-2">Noto Sans TC 900</span>
+                <span class="font-noto-900 block text-2xl leading-none">中文 Abc</span>
+              </button>
+              <button type="button" id="fontOptionCooper" onclick="selectFont('cooper')" class="font-option rounded-xl p-4 text-left" role="radio" aria-checked="false">
                 <span class="block text-xs opacity-70 mb-2">Cooper Md BT</span>
                 <span class="font-cooper block text-2xl leading-none">Abc 123</span>
               </button>
@@ -348,7 +357,7 @@
           <div class="bg-white/95 rounded-2xl p-3 shadow-xl border border-white/40">
             <div class="flex items-center justify-between px-1 pb-3 text-xs text-[#0b3b2f]/65 font-medium">
               <span>印製內容預覽</span>
-              <span id="livePreviewFontName">Cooper Md BT</span>
+              <span id="livePreviewFontName">Noto Sans TC 900</span>
             </div>
             <div class="print-preview-stage">
               <canvas id="printPreviewCanvas" aria-label="主圖與客製文字預覽"></canvas>
@@ -362,7 +371,7 @@
             </div>
             <div class="mockup-frame">
               <img id="livePreviewDesignImage" alt="提袋文字即時預覽" />
-              <div id="livePreviewText" class="mockup-print-text font-cooper"></div>
+              <div id="livePreviewText" class="mockup-print-text font-noto-900"></div>
             </div>
           </div>
           
@@ -409,7 +418,7 @@
               <div class="mt-4 bg-white/95 rounded-xl p-3">
                 <div class="mockup-frame">
                   <img id="confirmDesignImage" alt="提袋合成預覽" />
-                  <div id="confirmMockupText" class="mockup-print-text font-cooper">--</div>
+                  <div id="confirmMockupText" class="mockup-print-text font-noto-900">--</div>
                 </div>
               </div>
             </div>
@@ -656,6 +665,14 @@
     };
 
     const fontOptions = {
+      noto900: {
+        key: 'noto900',
+        name: 'Noto Sans TC 900',
+        className: 'font-noto-900',
+        fontFamily: '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
+        fontWeight: '900',
+        fontStyle: 'normal'
+      },
       cooper: {
         key: 'cooper',
         name: 'Cooper Md BT',
@@ -679,11 +696,11 @@
       designImage: '',
       text: '',
       phone: '',
-      fontKey: 'cooper',
-      fontName: fontOptions.cooper.name
+      fontKey: 'noto900',
+      fontName: fontOptions.noto900.name
     };
 
-    const getFontOption = (fontKey) => fontOptions[fontKey] || fontOptions.cooper;
+    const getFontOption = (fontKey) => fontOptions[fontKey] || fontOptions.noto900;
 
     const printImageCache = new Map();
     let printPreviewRenderToken = 0;
@@ -716,8 +733,8 @@
         await document.fonts.ready;
         const option = getFontOption(fontKey);
         await Promise.allSettled([
-          document.fonts.load(`96px "${option.name}"`),
-          document.fonts.load('96px "Noto Sans TC"')
+          document.fonts.load(`${option.fontStyle} ${option.fontWeight} 96px ${option.fontFamily}`),
+          document.fonts.load('900 96px "Noto Sans TC"')
         ]);
       }
 
@@ -848,7 +865,12 @@
       orderDraft.fontName = option.name;
 
       Object.keys(fontOptions).forEach(key => {
-        const buttonId = key === 'cooper' ? 'fontOptionCooper' : 'fontOptionCentra';
+        const buttonIds = {
+          noto900: 'fontOptionNoto900',
+          cooper: 'fontOptionCooper',
+          centra: 'fontOptionCentra'
+        };
+        const buttonId = buttonIds[key];
         const button = document.getElementById(buttonId);
         if (!button) return;
         const selected = key === option.key;
@@ -973,13 +995,13 @@
           designImage: '',
           text: '',
           phone: '',
-          fontKey: 'cooper',
-          fontName: fontOptions.cooper.name
+          fontKey: 'noto900',
+          fontName: fontOptions.noto900.name
         };
         document.getElementById('inputText').value = '';
         document.getElementById('inputPhone').value = '';
         document.getElementById('searchSeq').value = '';
-        selectFont('cooper');
+        selectFont('noto900');
       }
 
       const completed = orders.filter(o => o.status === '完成');
@@ -1261,7 +1283,7 @@
         const canvas = await buildPrintCanvas({
           design,
           text: order.customText || '',
-          fontKey: order.fontKey || 'cooper',
+          fontKey: order.fontKey || 'noto900',
           mirrored: true
         });
         const blob = await canvasToPngBlob(canvas);
@@ -1376,3 +1398,4 @@
   </script>
 </body>
 </html>
+
