@@ -320,10 +320,10 @@
           </div>
           
           <div class="space-y-3">
-            <label class="text-base text-white/80 font-medium">請輸入要印製的文字 (中、英文皆可)</label>
+            <label class="text-base text-white/80 font-medium">請輸入要印製的文字（選填，中、英文皆可）</label>
             <input type="text" id="inputText" maxlength="24" oninput="updateLivePreview()" placeholder="例如: 王大明 或 Mike Wang" class="w-full p-5 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-xl placeholder-white/50 shadow-inner" />
             <div class="flex items-center justify-between gap-3 text-sm text-white/70">
-              <p>文字將固定印製於主圖下方、左右置中</p>
+              <p>留白只印主圖；輸入文字則置中印於主圖下方</p>
               <span id="textCounter" class="shrink-0">0 / 24</span>
             </div>
           </div>
@@ -353,7 +353,6 @@
             <div class="print-preview-stage">
               <canvas id="printPreviewCanvas" aria-label="主圖與客製文字預覽"></canvas>
             </div>
-            <p class="px-1 pt-3 text-xs text-[#0b3b2f]/55">透明背景印製圖｜文字固定於主圖下方</p>
           </div>
 
           <div class="bg-white/95 rounded-2xl p-3 shadow-xl border border-white/40">
@@ -363,7 +362,7 @@
             </div>
             <div class="mockup-frame">
               <img id="livePreviewDesignImage" alt="提袋文字即時預覽" />
-              <div id="livePreviewText" class="mockup-print-text font-cooper preview-placeholder">Your text</div>
+              <div id="livePreviewText" class="mockup-print-text font-cooper"></div>
             </div>
           </div>
           
@@ -695,10 +694,13 @@
       context.font = `${style} ${option.fontWeight} ${fontSize}px ${option.fontFamily}`;
     };
 
-    const buildPrintCanvas = async ({ design, text, fontKey, mirrored = false, placeholder = false }) => {
+    const buildPrintCanvas = async ({ design, text, fontKey, mirrored = false }) => {
       if (!design?.printImage) throw new Error('找不到此款印製主圖');
 
-      if (document.fonts?.ready) {
+      const normalizedText = String(text || '').trim();
+      const hasText = normalizedText.length > 0;
+
+      if (hasText && document.fonts?.ready) {
         await document.fonts.ready;
         const option = getFontOption(fontKey);
         await Promise.allSettled([
@@ -717,25 +719,29 @@
       const workContext = workCanvas.getContext('2d');
 
       let fontSize = initialFontSize;
-      setCanvasTextFont(workContext, fontKey, fontSize);
       const maxTextWidth = width * 0.82;
-      while (fontSize > minimumFontSize && workContext.measureText(text).width > maxTextWidth) {
-        fontSize -= 2;
+      if (hasText) {
         setCanvasTextFont(workContext, fontKey, fontSize);
+        while (fontSize > minimumFontSize && workContext.measureText(normalizedText).width > maxTextWidth) {
+          fontSize -= 2;
+          setCanvasTextFont(workContext, fontKey, fontSize);
+        }
       }
 
-      const lineHeight = Math.ceil(fontSize * 1.3);
+      const lineHeight = hasText ? Math.ceil(fontSize * 1.3) : 0;
       workCanvas.width = width;
-      workCanvas.height = image.naturalHeight + gap + lineHeight + bottomPadding;
+      workCanvas.height = image.naturalHeight + (hasText ? gap + lineHeight + bottomPadding : 0);
 
       const context = workCanvas.getContext('2d');
       context.clearRect(0, 0, workCanvas.width, workCanvas.height);
       context.drawImage(image, 0, 0);
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-      context.fillStyle = placeholder ? 'rgba(23, 34, 30, .42)' : '#17221e';
-      setCanvasTextFont(context, fontKey, fontSize);
-      context.fillText(text, width / 2, image.naturalHeight + gap + lineHeight / 2, maxTextWidth);
+      if (hasText) {
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillStyle = '#17221e';
+        setCanvasTextFont(context, fontKey, fontSize);
+        context.fillText(normalizedText, width / 2, image.naturalHeight + gap + lineHeight / 2, maxTextWidth);
+      }
 
       if (!mirrored) return workCanvas;
 
@@ -755,15 +761,13 @@
       if (!previewCanvas || !design) return;
 
       const token = ++printPreviewRenderToken;
-      const inputText = document.getElementById('inputText')?.value || '';
-      const text = inputText || 'Your text';
+      const text = (document.getElementById('inputText')?.value || '').trim();
 
       try {
         const renderedCanvas = await buildPrintCanvas({
           design,
           text,
-          fontKey: orderDraft.fontKey,
-          placeholder: !inputText
+          fontKey: orderDraft.fontKey
         });
         if (token !== printPreviewRenderToken) return;
         previewCanvas.width = renderedCanvas.width;
@@ -831,14 +835,14 @@
     window.updateLivePreview = () => {
       const input = document.getElementById('inputText');
       const text = input ? input.value : '';
+      const displayText = text.trim();
       const previewText = document.getElementById('livePreviewText');
       const option = getFontOption(orderDraft.fontKey);
 
       if (previewText) {
-        previewText.textContent = text || 'Your text';
-        previewText.classList.toggle('preview-placeholder', !text);
+        previewText.textContent = displayText;
         applyFontToElement(previewText, option.key);
-        fitMockupText(previewText, text || 'Your text');
+        fitMockupText(previewText, displayText);
         positionMockupText(previewText, orderDraft.gift);
       }
 
@@ -851,7 +855,7 @@
       renderPrintPreview();
     };
 
-    window.showModal = (title, message, type = 'alert', onConfirm = null) => {
+    window.showModal = (title, message, type = 'alert', onConfirm = null, options = {}) => {
       document.getElementById('modalTitle').innerText = title;
       document.getElementById('modalMessage').innerText = message;
       const btnContainer = document.getElementById('modalButtons');
@@ -860,12 +864,12 @@
       if (type === 'confirm') {
         const cancelBtn = document.createElement('button');
         cancelBtn.className = 'flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition';
-        cancelBtn.innerText = '取消';
+        cancelBtn.innerText = options.cancelLabel || '取消';
         cancelBtn.onclick = () => document.getElementById('customModal').classList.add('hidden-view');
         
         const confirmBtn = document.createElement('button');
-        confirmBtn.className = 'flex-1 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition shadow-md';
-        confirmBtn.innerText = '確定執行';
+        confirmBtn.className = options.confirmClass || 'flex-1 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition shadow-md';
+        confirmBtn.innerText = options.confirmLabel || '確定執行';
         confirmBtn.onclick = () => {
           document.getElementById('customModal').classList.add('hidden-view');
           if(onConfirm) onConfirm();
@@ -1001,14 +1005,29 @@
       const text = document.getElementById('inputText').value.trim();
       const errBox = document.getElementById('textError');
       errBox.classList.add('hidden-view');
+
+      const continueToPhone = () => {
+        orderDraft.text = text;
+        const option = getFontOption(orderDraft.fontKey);
+        orderDraft.fontName = option.name;
+        switchFrontView('phone');
+      };
+
       if (!text) {
-        errBox.innerHTML = `<i data-lucide="x-circle" class="w-6 h-6"></i> 請輸入要印製的文字`;
-        errBox.classList.remove('hidden-view'); lucide.createIcons(); return;
+        showModal(
+          '確認不加文字',
+          '此訂單將只印製主圖，不會加上任何客製文字。',
+          'confirm',
+          continueToPhone,
+          {
+            cancelLabel: '返回輸入',
+            confirmLabel: '只印主圖',
+            confirmClass: 'flex-1 py-2.5 bg-emerald-700 text-white rounded-xl font-bold hover:bg-emerald-800 transition shadow-md'
+          }
+        );
+        return;
       }
-      orderDraft.text = text;
-      const option = getFontOption(orderDraft.fontKey);
-      orderDraft.fontName = option.name;
-      switchFrontView('phone');
+      continueToPhone();
     };
 
     window.handlePhoneSubmit = () => {
@@ -1027,9 +1046,9 @@
       orderDraft.phone = phone;
       document.getElementById('confirmGift').innerText = orderDraft.gift;
       document.getElementById('confirmDesignImage').src = orderDraft.designImage;
-      document.getElementById('confirmText').innerText = orderDraft.text;
+      document.getElementById('confirmText').innerText = orderDraft.text || '不加文字';
       document.getElementById('confirmMockupText').innerText = orderDraft.text;
-      document.getElementById('confirmFontName').innerText = orderDraft.fontName;
+      document.getElementById('confirmFontName').innerText = orderDraft.text ? orderDraft.fontName : '不適用';
       document.getElementById('confirmPhone').innerText = orderDraft.phone;
       applyFontToElement(document.getElementById('confirmText'), orderDraft.fontKey);
       applyFontToElement(document.getElementById('confirmMockupText'), orderDraft.fontKey);
@@ -1111,8 +1130,8 @@
           </div>
           <div class="p-5 space-y-4 text-base">
             <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">選擇圖案</span><span class="font-medium text-white">${order.gift || '未紀錄'}</span></div>
-            <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">印製文字</span><span class="font-bold text-white drop-shadow-sm">${order.customText || '未紀錄'}</span></div>
-            <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">英文字體</span><span class="text-white/90">${order.fontName || '未紀錄'}</span></div>
+            <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">印製文字</span><span class="font-bold text-white drop-shadow-sm">${order.customText || '不加文字'}</span></div>
+            <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">英文字體</span><span class="text-white/90">${order.customText ? (order.fontName || '未紀錄') : '不適用'}</span></div>
             <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">聯絡手機</span><span class="text-white/90">${maskedPhone}</span></div>
             <div class="flex justify-between"><span class="text-white/70">建立時間</span><span class="text-white/60">${order.createdAt}</span></div>
           </div>
@@ -1127,7 +1146,7 @@
     window.handleExportCSV = () => {
       if(orders.length === 0) { showModal('無法匯出', '目前沒有訂單。'); return; }
       const headers = ["序號", "手機號碼", "選擇圖案", "圖案網址", "印製文字", "英文字體", "狀態", "備註", "建立時間"];
-      const rows = orders.map(o => [o.sequenceId, o.phone, o.gift || '', o.designImage || '', o.customText || '', o.fontName || '未紀錄', o.status, o.note || '', o.createdAt]);
+      const rows = orders.map(o => [o.sequenceId, o.phone, o.gift || '', o.designImage || '', o.customText || '不加文字', o.customText ? (o.fontName || '未紀錄') : '不適用', o.status, o.note || '', o.createdAt]);
       const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(",") + "\n" + rows.map(e => e.map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")).join("\n");
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -1170,11 +1189,6 @@
         showModal('無法下載', '找不到此筆訂單對應的印製圖案。');
         return;
       }
-      if (!order.customText) {
-        showModal('無法下載', '此筆訂單沒有客製化文字。');
-        return;
-      }
-
       const originalHtml = button?.innerHTML || '';
       if (button) {
         button.disabled = true;
@@ -1184,13 +1198,13 @@
       try {
         const canvas = await buildPrintCanvas({
           design,
-          text: order.customText,
+          text: order.customText || '',
           fontKey: order.fontKey || 'cooper',
           mirrored: true
         });
         const blob = await canvasToPngBlob(canvas);
         const objectUrl = URL.createObjectURL(blob);
-        const safeText = String(order.customText).replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 24) || '文字';
+        const safeText = String(order.customText || '').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 24) || '不加文字';
         const link = document.createElement('a');
         link.href = objectUrl;
         link.download = `${order.sequenceId || 'order'}_${order.gift}_${safeText}_水平反轉.png`;
@@ -1247,8 +1261,8 @@
               </div>
             </td>
             <td class="p-5 text-emerald-800">
-              <div class="${orderFont.className} font-bold text-lg">${order.customText || '-'}</div>
-              <div class="text-xs text-slate-400 mt-1 not-italic">${order.fontName || '未紀錄'}</div>
+              <div class="${order.customText ? orderFont.className : ''} font-bold text-lg">${order.customText || '不加文字'}</div>
+              <div class="text-xs text-slate-400 mt-1 not-italic">${order.customText ? (order.fontName || '未紀錄') : '字體不適用'}</div>
             </td>
             <td class="p-5"><select onchange="changeOrderStatus('${order.id}', this.value)" class="${selectClass}" style="background-image: url('data:image/svg+xml,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'none\\' viewBox=\\'0 0 20 20\\'%3e%3cpath stroke=\\'%236b7280\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M6 8l4 4 4-4\\'/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"><option value="處理中" ${order.status === '處理中' ? 'selected' : ''}>處理中</option><option value="完成" ${order.status === '完成' ? 'selected' : ''}>完成</option><option value="取消" ${order.status === '取消' ? 'selected' : ''}>取消 (解鎖)</option></select></td>
             <td class="p-5">
