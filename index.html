@@ -175,6 +175,29 @@
       pointer-events: none;
     }
     .preview-placeholder { color: rgba(23, 34, 30, .42); }
+
+    /* 平板直向：操作視窗接近滿版，內容同步放大 */
+    @media (min-width: 640px) and (max-width: 1024px) {
+      #frontendView {
+        padding: 12px;
+        align-items: stretch;
+      }
+      #frontendView .event-shell {
+        width: 100%;
+        max-width: none;
+        height: calc(100dvh - 24px);
+        border-radius: 18px;
+      }
+      #designGrid,
+      #frontGift > div:last-child,
+      #frontText,
+      #frontPhone,
+      #frontConfirm,
+      #frontSuccess,
+      #frontStatus {
+        max-width: 560px;
+      }
+    }
   </style>
 </head>
 <body class="bg-[#eef3ef] font-sans text-gray-800 antialiased overflow-x-hidden">
