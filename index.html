@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- LivePrint Green UI v5.1 (Noto Sans TC 900 Default) -->
+<!-- LivePrint Green UI v5.2 -->
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
@@ -8,6 +8,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>現場印製帆布袋</title>
+  <link rel="icon" type="image/png" href="https://img.shoplineapp.com/media/image_clips/6a7d739be51d1230bcc80210/original.png?1786606491=&amp;owner_id=66221c5c384dbb002ec45c18">
+  <link rel="apple-touch-icon" href="https://img.shoplineapp.com/media/image_clips/6a7d739be51d1230bcc80210/original.png?1786606491=&amp;owner_id=66221c5c384dbb002ec45c18">
   
   <!-- 載入 Tailwind CSS (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -564,7 +566,7 @@
                 <option value="HSZ">新竹場</option>
                 <option value="TXG">台中場</option>
                 <option value="TNN">台南場</option>
-                <option value="unassigned">未設定</option>
+                <option value="unassigned">未分類</option>
               </select>
             </label>
           </div>
@@ -596,10 +598,10 @@
           <div class="space-y-8">
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-emerald-100">
               <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center gap-3"><i data-lucide="map-pin" class="w-6 h-6 text-emerald-700"></i> 本機場次設定</h3>
-              <p class="text-slate-500 text-sm leading-relaxed mb-5">此設定只儲存在目前這台平板或電腦，客人不會看到。從本機送出的新訂單會自動標記場次。</p>
+              <p class="text-slate-500 text-sm leading-relaxed mb-5">此設定只儲存在目前這台平板或電腦，客人不會看到。未選擇場次也能測試製作，訂單會標記為「未分類」。</p>
               <label class="block text-sm font-semibold text-slate-700 mb-2" for="venueSettingSelect">目前使用場次</label>
               <select id="venueSettingSelect" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-slate-800 focus:ring-2 focus:ring-emerald-600 focus:outline-none shadow-sm">
-                <option value="">請選擇場次</option>
+                <option value="">未分類（測試用）</option>
                 <option value="TPE">台北場</option>
                 <option value="HSZ">新竹場</option>
                 <option value="TXG">台中場</option>
@@ -609,7 +611,7 @@
                 <i data-lucide="save" class="w-5 h-5"></i> 儲存本機場次
               </button>
               <div class="mt-4 rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3 text-sm text-emerald-900">
-                本機目前設定：<strong id="currentVenueLabel">未設定</strong>
+                本機目前設定：<strong id="currentVenueLabel">未分類</strong>
               </div>
             </div>
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
@@ -676,6 +678,8 @@
     ];
     const VENUE_STORAGE_KEY = 'liveprint-venue-code';
     const BACKEND_VENUE_FILTER_KEY = 'liveprint-backend-venue-filter';
+    const APP_MODE_SESSION_KEY = 'liveprint-app-mode';
+    const BACKEND_VIEW_SESSION_KEY = 'liveprint-backend-view';
 
     const readLocalSetting = (key, fallback = '') => {
       try { return localStorage.getItem(key) || fallback; }
@@ -685,6 +689,14 @@
       try { localStorage.setItem(key, value); return true; }
       catch (error) { console.warn('Local setting write failed:', error); return false; }
     };
+    const readSessionSetting = (key, fallback = '') => {
+      try { return sessionStorage.getItem(key) || fallback; }
+      catch (error) { console.warn('Session setting read failed:', error); return fallback; }
+    };
+    const writeSessionSetting = (key, value) => {
+      try { sessionStorage.setItem(key, value); return true; }
+      catch (error) { console.warn('Session setting write failed:', error); return false; }
+    };
     const getVenueByCode = (code) => VENUE_OPTIONS.find(venue => venue.code === code) || null;
     const getConfiguredVenue = () => getVenueByCode(readLocalSetting(VENUE_STORAGE_KEY));
     const getOrderVenueCode = (order) => getVenueByCode(order?.venueCode)?.code || '';
@@ -693,10 +705,9 @@
       const match = String(sequenceId || '').match(/(\d+)$/);
       return match ? Number(match[1]) : 0;
     };
-    const getNextSequenceForVenue = (venueCode) => {
-      const venueOrders = orders.filter(order => getOrderVenueCode(order) === venueCode);
-      return venueOrders.length > 0 ? Math.max(...venueOrders.map(order => getSequenceNumber(order.sequenceId))) + 1 : 1;
-    };
+    const getNextGlobalSequence = () => orders.length > 0
+      ? Math.max(...orders.map(order => getSequenceNumber(order.sequenceId))) + 1
+      : 1;
     let backendVenueFilter = readLocalSetting(BACKEND_VENUE_FILTER_KEY) || getConfiguredVenue()?.code || 'all';
 
     // A–F 高清透明印製主圖直接內嵌，避免現場網路或跨網域造成下載失敗。
@@ -1030,7 +1041,7 @@
       const currentVenueLabel = document.getElementById('currentVenueLabel');
       const backendFilter = document.getElementById('backendVenueFilter');
       if (settingSelect) settingSelect.value = venue?.code || '';
-      if (currentVenueLabel) currentVenueLabel.textContent = venue ? `${venue.name}（${venue.code}）` : '未設定';
+      if (currentVenueLabel) currentVenueLabel.textContent = venue ? `${venue.name}（${venue.code}）` : '未分類';
       if (backendFilter) {
         const validFilter = backendVenueFilter === 'all' || backendVenueFilter === 'unassigned' || getVenueByCode(backendVenueFilter);
         if (!validFilter) backendVenueFilter = venue?.code || 'all';
@@ -1042,7 +1053,18 @@
       const venueCode = document.getElementById('venueSettingSelect')?.value || '';
       const venue = getVenueByCode(venueCode);
       if (!venue) {
-        showModal('尚未選擇場次', '請先選擇台北、新竹、台中或台南場。');
+        if (!writeLocalSetting(VENUE_STORAGE_KEY, '')) {
+          showModal('無法儲存', '瀏覽器目前無法保存本機場次，請確認未使用私密瀏覽模式。');
+          return;
+        }
+        backendVenueFilter = 'unassigned';
+        writeLocalSetting(BACKEND_VENUE_FILTER_KEY, backendVenueFilter);
+        orderDraft.venueCode = '';
+        orderDraft.venueName = '未分類';
+        updateVenueSettingUI();
+        renderOrdersTable();
+        updateBackendStats();
+        showModal('場次設定完成', '本機已設為「未分類」。工作人員可正常建立測試訂單。');
         return;
       }
       if (!writeLocalSetting(VENUE_STORAGE_KEY, venue.code)) {
@@ -1068,27 +1090,25 @@
 
     window.startOrderFlow = () => {
       const venue = getConfiguredVenue();
-      if (!venue) {
-        showModal('尚未設定活動場次', '請工作人員點選右上角齒輪登入後台，至「系統設定」完成本機場次設定。');
-        return;
-      }
-      orderDraft.venueCode = venue.code;
-      orderDraft.venueName = venue.name;
+      orderDraft.venueCode = venue?.code || '';
+      orderDraft.venueName = venue?.name || '未分類';
       switchFrontView('gift');
     };
 
     window.switchAppMode = (mode) => {
+      const safeMode = mode === 'backend' ? 'backend' : 'frontend';
+      writeSessionSetting(APP_MODE_SESSION_KEY, safeMode);
       document.getElementById('frontendView').classList.add('hidden-view');
       document.getElementById('backendView').classList.add('hidden-view');
 
-      if (mode === 'frontend') {
+      if (safeMode === 'frontend') {
         document.getElementById('frontendView').classList.remove('hidden-view');
         switchFrontView('home');
       }
-      if (mode === 'backend') {
+      if (safeMode === 'backend') {
         document.getElementById('backendView').classList.remove('hidden-view');
         updateVenueSettingUI();
-        switchBackView('orders');
+        switchBackView(readSessionSetting(BACKEND_VIEW_SESSION_KEY, 'orders'));
       }
       lucide.createIcons();
     };
@@ -1128,7 +1148,7 @@
           fontKey: 'noto900',
           fontName: fontOptions.noto900.name,
           venueCode: configuredVenue?.code || '',
-          venueName: configuredVenue?.name || ''
+          venueName: configuredVenue?.name || '未分類'
         };
         document.getElementById('inputText').value = '';
         document.getElementById('inputPhone').value = '';
@@ -1163,6 +1183,8 @@
     };
 
     window.switchBackView = (view) => {
+      const safeView = view === 'system' ? 'system' : 'orders';
+      writeSessionSetting(BACKEND_VIEW_SESSION_KEY, safeView);
       document.getElementById('backOrdersView').classList.add('hidden-view');
       document.getElementById('backSystemView').classList.add('hidden-view');
       const btnOrders = document.getElementById('btnBackOrders');
@@ -1170,7 +1192,7 @@
       btnOrders.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white";
       btnSystem.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white";
 
-      if(view === 'orders') {
+      if(safeView === 'orders') {
         document.getElementById('backOrdersView').classList.remove('hidden-view');
         document.getElementById('backHeaderTitle').innerText = '訂單總覽';
         btnOrders.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-emerald-700 text-white shadow-lg shadow-emerald-950/50";
@@ -1280,29 +1302,24 @@
       errBox.classList.add('hidden-view');
 
       const venue = getVenueByCode(orderDraft.venueCode) || getConfiguredVenue();
-      if (!venue) {
-        errBox.innerText = '本機尚未設定活動場次，請聯絡現場工作人員。';
-        errBox.classList.remove('hidden-view');
-        return;
-      }
+      const venueCode = venue?.code || '';
+      const venueName = venue?.name || '未分類';
       
       document.getElementById('submitIcon').classList.remove('hidden');
 
       try {
         const finalSeqStr = await runTransaction(db, async (transaction) => {
-          const counterRef = doc(db, 'artifacts', appId, 'public', 'data', 'system', `counter-${venue.code}`);
+          // 全站共用同一個原子發號機：不同場次同時送單也不會產生重複序號。
+          const counterRef = doc(db, 'artifacts', appId, 'public', 'data', 'system', 'counter');
           const counterSnap = await transaction.get(counterRef);
 
-          let nextSeq = 1;
-          if (counterSnap.exists() && counterSnap.data().currentSeq !== undefined) {
-             nextSeq = counterSnap.data().currentSeq + 1;
-          } else {
-             nextSeq = getNextSequenceForVenue(venue.code);
-          }
+          const storedSequence = counterSnap.exists() ? Number(counterSnap.data().currentSeq || 0) : 0;
+          const highestExistingSequence = Math.max(0, ...orders.map(order => getSequenceNumber(order.sequenceId)));
+          const nextSeq = Math.max(storedSequence, highestExistingSequence) + 1;
 
           transaction.set(counterRef, { currentSeq: nextSeq }, { merge: true });
 
-          const seqStr = `${venue.code}-${String(nextSeq).padStart(3, '0')}`;
+          const seqStr = String(nextSeq).padStart(3, '0');
           
           const newOrderRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'));
           const newOrder = {
@@ -1313,8 +1330,8 @@
             customText: orderDraft.text,
             fontKey: orderDraft.fontKey,
             fontName: orderDraft.fontName,
-            venueCode: venue.code,
-            venueName: venue.name,
+            venueCode,
+            venueName,
             status: '處理中',
             note: '',
             createdAt: new Date().toLocaleString(),
@@ -1346,11 +1363,13 @@
       let order = null;
       if (/^\d+$/.test(searchVal)) {
         const paddedNumber = searchVal.padStart(3, '0');
+        // 新版純數字序號優先；仍保留舊版場次前綴序號的查詢相容性。
+        order = orders.find(item => String(item.sequenceId || '').toUpperCase() === paddedNumber);
         const configuredVenue = getConfiguredVenue();
-        if (configuredVenue) {
+        if (!order && configuredVenue) {
           order = orders.find(item => String(item.sequenceId || '').toUpperCase() === `${configuredVenue.code}-${paddedNumber}`);
-          if (!order) order = orders.find(item => String(item.sequenceId || '').toUpperCase() === paddedNumber);
-        } else {
+        }
+        if (!order && !configuredVenue) {
           const matches = orders.filter(item => String(item.sequenceId || '').toUpperCase() === paddedNumber || String(item.sequenceId || '').toUpperCase().endsWith(`-${paddedNumber}`));
           if (matches.length === 1) order = matches[0];
         }
@@ -1386,7 +1405,7 @@
     window.handleExportCSV = () => {
       if(orders.length === 0) { showModal('無法匯出', '目前沒有訂單。'); return; }
       const headers = ["序號", "場次", "場次代碼", "手機號碼", "選擇圖案", "圖案網址", "印製文字", "英文字體", "狀態", "備註", "建立時間"];
-      const rows = orders.map(order => [order.sequenceId, getOrderVenue(order)?.name || order.venueName || '未設定', getOrderVenueCode(order) || '', order.phone, order.gift || '', order.designImage || '', order.customText || '不加文字', order.customText ? (order.fontName || '未紀錄') : '不適用', order.status, order.note || '', order.createdAt]);
+      const rows = orders.map(order => [order.sequenceId, getOrderVenue(order)?.name || order.venueName || '未分類', getOrderVenueCode(order) || '', order.phone, order.gift || '', order.designImage || '', order.customText || '不加文字', order.customText ? (order.fontName || '未紀錄') : '不適用', order.status, order.note || '', order.createdAt]);
       const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(",") + "\n" + rows.map(e => e.map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")).join("\n");
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -1476,7 +1495,7 @@
 
     const getVenueBadgeHtml = (order) => {
       const venue = getOrderVenue(order);
-      if (!venue) return '<span class="inline-flex px-2.5 py-1 rounded-full border bg-slate-100 text-slate-500 border-slate-200 text-xs font-bold whitespace-nowrap">未設定</span>';
+      if (!venue) return '<span class="inline-flex px-2.5 py-1 rounded-full border bg-slate-100 text-slate-500 border-slate-200 text-xs font-bold whitespace-nowrap">未分類</span>';
       return `<span class="inline-flex px-2.5 py-1 rounded-full border ${venue.badgeClass} text-xs font-bold whitespace-nowrap">${venue.name}</span>`;
     };
 
@@ -1486,13 +1505,8 @@
       document.getElementById('statCompleted').innerText = scopedOrders.filter(order => order.status === '完成').length;
       document.getElementById('statTotalOrders').innerText = scopedOrders.length;
 
-      const venue = getVenueByCode(backendVenueFilter);
-      if (venue) {
-        sequenceCounter = getNextSequenceForVenue(venue.code);
-        document.getElementById('statNextSeq').innerText = `${venue.code}-${String(sequenceCounter).padStart(3, '0')}`;
-      } else {
-        document.getElementById('statNextSeq').innerText = backendVenueFilter === 'all' ? '各場獨立' : '--';
-      }
+      sequenceCounter = getNextGlobalSequence();
+      document.getElementById('statNextSeq').innerText = `#${String(sequenceCounter).padStart(3, '0')}`;
     };
 
     const renderOrdersTable = () => {
@@ -1564,7 +1578,7 @@
       onAuthStateChanged(auth, (user) => {
         if (user) {
           document.getElementById('loadingView').classList.add('hidden-view');
-          switchAppMode('frontend');
+          switchAppMode(readSessionSetting(APP_MODE_SESSION_KEY, 'frontend'));
 
           onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), (snapshot) => {
             orders = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
