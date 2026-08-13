@@ -8,8 +8,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>現場印製帆布袋</title>
-  <link rel="icon" type="image/png" href="https://img.shoplineapp.com/media/image_clips/6a7d739be51d1230bcc80210/original.png?1786606491=&amp;owner_id=66221c5c384dbb002ec45c18">
-  <link rel="apple-touch-icon" href="https://img.shoplineapp.com/media/image_clips/6a7d739be51d1230bcc80210/original.png?1786606491=&amp;owner_id=66221c5c384dbb002ec45c18">
+  <link rel="icon" type="image/png" href="https://img.shoplineapp.com/media/image_clips/6a7d7ecc8d5579c8b38f1de9/original.png?1786609356=&amp;owner_id=66221c5c384dbb002ec45c18">
+  <link rel="apple-touch-icon" href="https://img.shoplineapp.com/media/image_clips/6a7d7ecc8d5579c8b38f1de9/original.png?1786609356=&amp;owner_id=66221c5c384dbb002ec45c18">
   
   <!-- 載入 Tailwind CSS (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -737,6 +737,28 @@
       { id: 'design-E', name: 'E', mockupArtWidth: .289, mockupArtBottom: .821, printImage: PRINT_ASSETS.E, image: 'https://img.shoplineapp.com/media/image_clips/6a79942300e653bd791bd161/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' },
       { id: 'design-F', name: 'F', mockupArtWidth: .289, mockupArtBottom: .815, printImage: PRINT_ASSETS.F, image: 'https://img.shoplineapp.com/media/image_clips/6a799423a40b6b4e5b6a7759/original.png?1786352674=&owner_id=66221c5c384dbb002ec45c18' }
     ];
+
+    // 後台縮圖使用內嵌的透明主圖，並轉為可重複使用的短網址，避免每筆訂單重複塞入大型 Base64。
+    const backendDesignThumbnailUrls = new Map();
+    const getBackendDesignThumbnail = (designName) => {
+      const design = designs.find(item => item.name === designName);
+      if (!design?.printImage) return design?.image || '';
+      if (backendDesignThumbnailUrls.has(design.name)) return backendDesignThumbnailUrls.get(design.name);
+
+      try {
+        const [metadata, encodedData] = design.printImage.split(',');
+        const mimeType = metadata.match(/^data:([^;]+)/)?.[1] || 'image/png';
+        const binary = atob(encodedData);
+        const bytes = new Uint8Array(binary.length);
+        for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+        const objectUrl = URL.createObjectURL(new Blob([bytes], { type: mimeType }));
+        backendDesignThumbnailUrls.set(design.name, objectUrl);
+        return objectUrl;
+      } catch (error) {
+        console.warn('Backend design thumbnail failed:', error);
+        return design.image || '';
+      }
+    };
 
     const PRINT_TEXT_LAYOUT = {
       fontRatio: .075,
@@ -1534,6 +1556,7 @@
       let html = '';
       filteredOrders.forEach(order => {
         const orderFont = getFontOption(order.fontKey);
+        const designThumbnail = getBackendDesignThumbnail(order.gift) || order.designImage || '';
         let selectClass = "px-4 py-2 rounded-xl text-sm font-bold border outline-none cursor-pointer appearance-none shadow-sm transition-all ";
         if(order.status === '處理中') selectClass += "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100";
         else if (order.status === '完成') selectClass += "bg-green-50 text-green-700 border-green-200 hover:bg-green-100";
@@ -1550,7 +1573,7 @@
             <td class="p-5 font-medium text-slate-800">${order.phone}</td>
             <td class="p-5 text-slate-600 font-medium">
               <div class="flex items-center gap-3">
-                ${order.designImage ? `<img src="${order.designImage}" alt="${order.gift || '圖案'}" class="w-14 h-14 object-contain rounded-lg border border-slate-200 bg-white p-1">` : ''}
+                ${designThumbnail ? `<img src="${designThumbnail}" alt="${order.gift || '圖案'}主圖" class="w-16 h-16 object-contain rounded-lg border border-slate-200 bg-slate-50 p-1.5">` : ''}
                 <span>${order.gift || '-'}</span>
               </div>
             </td>
