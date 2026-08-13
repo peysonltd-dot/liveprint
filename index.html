@@ -207,6 +207,53 @@
       max-height: 420px;
     }
 
+    /* 後台可收合側欄 */
+    .backend-sidebar {
+      width: 16rem;
+      min-width: 16rem;
+      transition: width .25s ease, min-width .25s ease;
+    }
+    .backend-sidebar .sidebar-brand,
+    .backend-sidebar .sidebar-label {
+      white-space: nowrap;
+      overflow: hidden;
+      opacity: 1;
+      transition: opacity .15s ease, width .25s ease;
+    }
+    .backend-sidebar .sidebar-label { display: inline-block; }
+    .backend-sidebar .sidebar-toggle-icon {
+      transition: transform .25s ease;
+    }
+    .backend-sidebar.is-collapsed {
+      width: 5rem;
+      min-width: 5rem;
+    }
+    .backend-sidebar.is-collapsed .sidebar-brand,
+    .backend-sidebar.is-collapsed .sidebar-label {
+      width: 0;
+      opacity: 0;
+      visibility: hidden;
+    }
+    .backend-sidebar.is-collapsed .backend-sidebar-header,
+    .backend-sidebar.is-collapsed .backend-nav-button,
+    .backend-sidebar.is-collapsed .backend-sidebar-footer-button {
+      justify-content: center;
+    }
+    .backend-sidebar.is-collapsed .backend-sidebar-header {
+      gap: 0;
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    .backend-sidebar.is-collapsed .backend-nav-button,
+    .backend-sidebar.is-collapsed .backend-sidebar-footer-button {
+      gap: 0;
+      padding-left: .75rem;
+      padding-right: .75rem;
+    }
+    .backend-sidebar.is-collapsed .sidebar-toggle-icon {
+      transform: rotate(180deg);
+    }
+
     /* 平板直向：操作視窗接近滿版，內容同步放大 */
     @media (min-width: 640px) and (max-width: 1024px) {
       #frontendView {
@@ -440,10 +487,10 @@
 
           <div class="flex gap-4 pt-4">
             <button id="editOrderButton" onclick="switchFrontView('phone')" class="event-secondary flex-1 py-4 border rounded-xl font-medium transition text-lg disabled:opacity-50 disabled:cursor-not-allowed">修改</button>
-            <button id="submitOrderButton" onclick="submitOrder()" class="event-primary flex-1 py-4 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait disabled:hover:scale-100">
+            <button id="submitOrderButton" onclick="submitOrder()" class="event-primary flex-1 py-4 rounded-xl font-bold text-lg shadow-lg transition transform hover:scale-105 flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-70 disabled:cursor-wait disabled:hover:scale-100">
               <span id="submitSpinner" class="hidden w-6 h-6 border-2 border-white/40 border-t-white rounded-full animate-spin shrink-0" aria-hidden="true"></span>
               <i data-lucide="send" class="w-6 h-6" id="submitIcon"></i>
-              <span id="submitButtonText">送出訂單</span>
+              <span id="submitButtonText" class="whitespace-nowrap">送出訂單</span>
             </button>
           </div>
         </div>
@@ -499,22 +546,27 @@
   <!-- ========================================== -->
   <div id="backendView" class="hidden-view min-h-screen bg-gray-100 flex">
     <!-- Sidebar -->
-    <div class="w-64 bg-gray-900 text-white flex flex-col shadow-xl z-20">
-      <div class="p-6 border-b border-gray-800">
-        <h1 class="text-xl font-black tracking-wider text-emerald-300">系統管理後台</h1>
-        <p class="text-xs text-gray-500 mt-2">Desktop Manager</p>
+    <div id="backendSidebar" class="backend-sidebar bg-gray-900 text-white flex flex-col shadow-xl z-20 shrink-0">
+      <div class="backend-sidebar-header p-5 border-b border-gray-800 flex items-start justify-between gap-3">
+        <div class="sidebar-brand min-w-0">
+          <h1 class="text-xl font-black tracking-wider text-emerald-300">系統管理後台</h1>
+          <p class="text-xs text-gray-500 mt-2">Desktop Manager</p>
+        </div>
+        <button id="backendSidebarToggle" type="button" onclick="toggleBackendSidebar()" aria-label="縮小側欄" aria-expanded="true" title="縮小側欄" class="w-10 h-10 shrink-0 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 flex items-center justify-center transition">
+          <i data-lucide="chevrons-left" class="sidebar-toggle-icon w-5 h-5"></i>
+        </button>
       </div>
       <nav class="flex-1 p-4 space-y-2">
-          <button onclick="switchBackView('orders')" id="btnBackOrders" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-emerald-700 text-white shadow-lg shadow-emerald-950/50">
-            <i data-lucide="list" class="w-5 h-5"></i> 訂單管理
+          <button onclick="switchBackView('orders')" id="btnBackOrders" title="訂單管理" class="backend-nav-button w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-emerald-700 text-white shadow-lg shadow-emerald-950/50">
+            <i data-lucide="list" class="w-5 h-5 shrink-0"></i><span class="sidebar-label">訂單管理</span>
           </button>
-          <button onclick="switchBackView('system')" id="btnBackSystem" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white">
-            <i data-lucide="settings" class="w-5 h-5"></i> 系統設定
+          <button onclick="switchBackView('system')" id="btnBackSystem" title="系統設定" class="backend-nav-button w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white">
+            <i data-lucide="settings" class="w-5 h-5 shrink-0"></i><span class="sidebar-label">系統設定</span>
         </button>
       </nav>
       <div class="p-4 border-t border-gray-800">
-        <button onclick="switchAppMode('frontend')" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 transition">
-          <i data-lucide="log-out" class="w-4 h-4"></i> 回前台
+        <button onclick="switchAppMode('frontend')" title="回前台" class="backend-sidebar-footer-button w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 transition">
+          <i data-lucide="log-out" class="w-4 h-4 shrink-0"></i><span class="sidebar-label">回前台</span>
         </button>
       </div>
     </div>
@@ -681,6 +733,7 @@
     ];
     const VENUE_STORAGE_KEY = 'liveprint-venue-code';
     const BACKEND_VENUE_FILTER_KEY = 'liveprint-backend-venue-filter';
+    const BACKEND_SIDEBAR_COLLAPSED_KEY = 'liveprint-backend-sidebar-collapsed';
     const APP_MODE_SESSION_KEY = 'liveprint-app-mode';
     const BACKEND_VIEW_SESSION_KEY = 'liveprint-backend-view';
 
@@ -699,6 +752,24 @@
     const writeSessionSetting = (key, value) => {
       try { sessionStorage.setItem(key, value); return true; }
       catch (error) { console.warn('Session setting write failed:', error); return false; }
+    };
+
+    const applyBackendSidebarState = (collapsed) => {
+      const sidebar = document.getElementById('backendSidebar');
+      const toggle = document.getElementById('backendSidebarToggle');
+      if (!sidebar || !toggle) return;
+      sidebar.classList.toggle('is-collapsed', collapsed);
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      toggle.setAttribute('aria-label', collapsed ? '展開側欄' : '縮小側欄');
+      toggle.title = collapsed ? '展開側欄' : '縮小側欄';
+    };
+
+    window.toggleBackendSidebar = () => {
+      const sidebar = document.getElementById('backendSidebar');
+      if (!sidebar) return;
+      const collapsed = !sidebar.classList.contains('is-collapsed');
+      writeLocalSetting(BACKEND_SIDEBAR_COLLAPSED_KEY, collapsed ? '1' : '0');
+      applyBackendSidebarState(collapsed);
     };
     const getVenueByCode = (code) => VENUE_OPTIONS.find(venue => venue.code === code) || null;
     const getConfiguredVenue = () => getVenueByCode(readLocalSetting(VENUE_STORAGE_KEY));
@@ -815,7 +886,7 @@
       if (editButton) editButton.disabled = isSubmitting;
       if (spinner) spinner.classList.toggle('hidden', !isSubmitting);
       if (icon) icon.classList.toggle('hidden', isSubmitting);
-      if (label) label.textContent = isSubmitting ? '正在送出，請稍候…' : '送出訂單';
+      if (label) label.textContent = isSubmitting ? '正在送出…' : '送出訂單';
     };
 
     let orderDraft = {
@@ -1151,6 +1222,7 @@
       }
       if (safeMode === 'backend') {
         document.getElementById('backendView').classList.remove('hidden-view');
+        applyBackendSidebarState(readLocalSetting(BACKEND_SIDEBAR_COLLAPSED_KEY, '0') === '1');
         updateVenueSettingUI();
         switchBackView(readSessionSetting(BACKEND_VIEW_SESSION_KEY, 'orders'));
       }
@@ -1235,17 +1307,17 @@
       document.getElementById('backSystemView').classList.add('hidden-view');
       const btnOrders = document.getElementById('btnBackOrders');
       const btnSystem = document.getElementById('btnBackSystem');
-      btnOrders.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white";
-      btnSystem.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white";
+      btnOrders.className = "backend-nav-button w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white";
+      btnSystem.className = "backend-nav-button w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-400 hover:bg-slate-800 hover:text-white";
 
       if(safeView === 'orders') {
         document.getElementById('backOrdersView').classList.remove('hidden-view');
         document.getElementById('backHeaderTitle').innerText = '訂單總覽';
-        btnOrders.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-emerald-700 text-white shadow-lg shadow-emerald-950/50";
+        btnOrders.className = "backend-nav-button w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-emerald-700 text-white shadow-lg shadow-emerald-950/50";
       } else {
         document.getElementById('backSystemView').classList.remove('hidden-view');
         document.getElementById('backHeaderTitle').innerText = '系統設定';
-        btnSystem.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-emerald-700 text-white shadow-lg shadow-emerald-950/50";
+        btnSystem.className = "backend-nav-button w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-emerald-700 text-white shadow-lg shadow-emerald-950/50";
         updateVenueSettingUI();
       }
       lucide.createIcons();
