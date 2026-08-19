@@ -7,7 +7,20 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>現場印製帆布袋</title>
+  <title>Roots時光帆布袋｜現場客製體驗</title>
+  <meta name="description" content="選擇喜愛的圖案，加入專屬文字，完成您的 Roots 時光帆布袋。">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_TW">
+  <meta property="og:site_name" content="Roots時光帆布袋">
+  <meta property="og:title" content="Roots時光帆布袋｜現場客製體驗">
+  <meta property="og:description" content="選擇喜愛的圖案，加入專屬文字，完成您的 Roots 時光帆布袋。">
+  <meta property="og:url" content="https://peysonliveprint.com/">
+  <meta property="og:image" content="https://img.shoplineapp.com/media/image_clips/6a7d7ecc8d5579c8b38f1de9/original.png?1786609356=&amp;owner_id=66221c5c384dbb002ec45c18">
+  <meta property="og:image:alt" content="Roots時光帆布袋現場客製體驗">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Roots時光帆布袋｜現場客製體驗">
+  <meta name="twitter:description" content="選擇喜愛的圖案，加入專屬文字，完成您的 Roots 時光帆布袋。">
+  <meta name="twitter:image" content="https://img.shoplineapp.com/media/image_clips/6a7d7ecc8d5579c8b38f1de9/original.png?1786609356=&amp;owner_id=66221c5c384dbb002ec45c18">
   <link rel="icon" type="image/png" href="https://img.shoplineapp.com/media/image_clips/6a7d7ecc8d5579c8b38f1de9/original.png?1786609356=&amp;owner_id=66221c5c384dbb002ec45c18">
   <link rel="apple-touch-icon" href="https://img.shoplineapp.com/media/image_clips/6a7d7ecc8d5579c8b38f1de9/original.png?1786609356=&amp;owner_id=66221c5c384dbb002ec45c18">
   
@@ -21,6 +34,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 
   <style>
     @font-face {
@@ -148,17 +162,17 @@
       box-shadow: 0 10px 30px rgba(2, 25, 20, .24);
     }
     .font-cooper {
-      font-family: "Cooper Md BT", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-family: "Cooper Md BT", "Noto Color Emoji", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
       font-weight: 500;
       font-style: normal;
     }
     .font-noto-900 {
-      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-family: "Noto Sans TC", "Noto Color Emoji", "PingFang TC", "Microsoft JhengHei", sans-serif;
       font-weight: 900;
       font-style: normal;
     }
     .font-centra {
-      font-family: "Centra No1", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-family: "Centra No1", "Noto Color Emoji", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
       font-weight: 700;
       font-style: italic;
     }
@@ -387,7 +401,7 @@
           
           <div class="space-y-3">
             <label class="text-base text-white/80 font-medium">請輸入要印製的文字（選填，中、英文皆可）</label>
-            <input type="text" id="inputText" maxlength="20" oninput="updateLivePreview()" placeholder="例如: 王大明 或 Mike Wang" class="w-full p-5 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-xl placeholder-white/50 shadow-inner" />
+            <input type="text" id="inputText" oninput="updateLivePreview()" placeholder="例如: 王大明、Mike Wang 或 ❤️" class="w-full p-5 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-xl placeholder-white/50 shadow-inner" />
             <div class="flex items-center justify-between gap-3 text-sm text-white/70">
               <p>文字位置固定於主圖下方</p>
               <span id="textCounter" class="shrink-0">0 / 20</span>
@@ -870,7 +884,8 @@
         key: 'noto900',
         name: 'Noto Sans TC 900',
         className: 'font-noto-900',
-        fontFamily: '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
+        primaryFamily: '"Noto Sans TC"',
+        fontFamily: '"Noto Sans TC", "Noto Color Emoji", "PingFang TC", "Microsoft JhengHei", sans-serif',
         fontWeight: '900',
         fontStyle: 'normal'
       },
@@ -878,7 +893,8 @@
         key: 'cooper',
         name: 'Cooper Md BT',
         className: 'font-cooper',
-        fontFamily: '"Cooper Md BT", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
+        primaryFamily: '"Cooper Md BT"',
+        fontFamily: '"Cooper Md BT", "Noto Color Emoji", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
         fontWeight: '500',
         fontStyle: 'normal'
       },
@@ -886,10 +902,47 @@
         key: 'centra',
         name: 'Centra No1',
         className: 'font-centra',
-        fontFamily: '"Centra No1", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
+        primaryFamily: '"Centra No1"',
+        fontFamily: '"Centra No1", "Noto Color Emoji", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
         fontWeight: '700',
         fontStyle: 'italic'
       }
+    };
+
+    const EMOJI_FONT_FAMILY = '"Noto Color Emoji"';
+    const CJK_FONT_FAMILY = '"Noto Sans TC"';
+    const graphemeSegmenter = typeof Intl?.Segmenter === 'function'
+      ? new Intl.Segmenter('zh-TW', { granularity: 'grapheme' })
+      : null;
+    const emojiGraphemePattern = /[\p{Extended_Pictographic}\p{Regional_Indicator}\uFE0F\u20E3]/u;
+    const latinGraphemePattern = /^(?:\p{Script=Latin}[\p{Mark}]*)$|^[\p{Number}\p{Punctuation}\p{Separator}]+$/u;
+
+    const splitGraphemes = (value) => {
+      const text = String(value || '');
+      return graphemeSegmenter
+        ? Array.from(graphemeSegmenter.segment(text), item => item.segment)
+        : Array.from(text);
+    };
+
+    const getGraphemeType = (grapheme) => {
+      if (emojiGraphemePattern.test(grapheme)) return 'emoji';
+      if (latinGraphemePattern.test(grapheme)) return 'latin';
+      return 'cjk';
+    };
+
+    const getTextRuns = (text) => splitGraphemes(text).reduce((runs, grapheme) => {
+      const type = getGraphemeType(grapheme);
+      const previous = runs[runs.length - 1];
+      if (previous?.type === type) previous.text += grapheme;
+      else runs.push({ type, text: grapheme });
+      return runs;
+    }, []);
+
+    const limitTextInput = (input, maximum = 20) => {
+      if (!input) return '';
+      const graphemes = splitGraphemes(input.value);
+      if (graphemes.length > maximum) input.value = graphemes.slice(0, maximum).join('');
+      return input.value;
     };
 
     const createSubmissionKey = () => globalThis.crypto?.randomUUID?.()
@@ -942,7 +995,98 @@
     const setCanvasTextFont = (context, fontKey, fontSize) => {
       const option = getFontOption(fontKey);
       const style = option.fontStyle === 'italic' ? 'italic' : 'normal';
-      context.font = `${style} ${option.fontWeight} ${fontSize}px ${option.fontFamily}`;
+      context.font = `${style} ${option.fontWeight} ${fontSize}px ${option.primaryFamily}`;
+    };
+
+    const setCanvasRunFont = (context, fontKey, fontSize, runType) => {
+      if (runType === 'emoji') {
+        context.font = `normal 400 ${fontSize}px ${EMOJI_FONT_FAMILY}`;
+        return;
+      }
+      if (runType === 'cjk') {
+        context.font = `normal 900 ${fontSize}px ${CJK_FONT_FAMILY}`;
+        return;
+      }
+      setCanvasTextFont(context, fontKey, fontSize);
+    };
+
+    const ensureRenderingFonts = async (fontKey, text) => {
+      if (!text || !document.fonts?.load) return;
+      const option = getFontOption(fontKey);
+      const runs = getTextRuns(text);
+      const requests = [];
+
+      const latinSample = runs.filter(run => run.type === 'latin').map(run => run.text).join('');
+      const cjkSample = runs.filter(run => run.type === 'cjk').map(run => run.text).join('');
+      const emojiSample = runs.filter(run => run.type === 'emoji').map(run => run.text).join('');
+
+      if (latinSample) {
+        const style = option.fontStyle === 'italic' ? 'italic' : 'normal';
+        requests.push({
+          label: option.name,
+          promise: document.fonts.load(`${style} ${option.fontWeight} 96px ${option.primaryFamily}`, latinSample)
+        });
+      }
+      if (cjkSample) {
+        requests.push({
+          label: 'Noto Sans TC 900',
+          promise: document.fonts.load(`normal 900 96px ${CJK_FONT_FAMILY}`, cjkSample)
+        });
+      }
+      if (emojiSample) {
+        requests.push({
+          label: 'Noto Color Emoji',
+          promise: document.fonts.load(`normal 400 96px ${EMOJI_FONT_FAMILY}`, emojiSample)
+        });
+      }
+
+      const results = await Promise.all(requests.map(async request => ({
+        label: request.label,
+        faces: await request.promise
+      })));
+      const missing = results.find(result => !result.faces?.length);
+      if (missing) throw new Error(`${missing.label} 字型尚未載入完成`);
+    };
+
+    const measureTextLayout = (context, text, fontKey, fontSize) => {
+      const runs = getTextRuns(text);
+      let cursor = 0;
+      let visibleLeft = Number.POSITIVE_INFINITY;
+      let visibleRight = Number.NEGATIVE_INFINITY;
+
+      const measuredRuns = runs.map(run => {
+        setCanvasRunFont(context, fontKey, fontSize, run.type);
+        const metrics = context.measureText(run.text);
+        const left = cursor - Number(metrics.actualBoundingBoxLeft || 0);
+        const right = cursor + Number(metrics.actualBoundingBoxRight || metrics.width);
+        visibleLeft = Math.min(visibleLeft, left);
+        visibleRight = Math.max(visibleRight, right);
+        const measuredRun = { ...run, width: metrics.width };
+        cursor += metrics.width;
+        return measuredRun;
+      });
+
+      if (!measuredRuns.length) visibleLeft = visibleRight = 0;
+      return {
+        runs: measuredRuns,
+        advanceWidth: cursor,
+        visibleLeft,
+        visibleRight,
+        renderWidth: Math.max(cursor, visibleRight - visibleLeft)
+      };
+    };
+
+    const drawCenteredTextLayout = (context, layout, fontKey, fontSize, centerX, centerY) => {
+      const visualCenter = (layout.visibleLeft + layout.visibleRight) / 2;
+      let cursor = centerX - visualCenter;
+      context.textAlign = 'left';
+      context.textBaseline = 'middle';
+
+      layout.runs.forEach(run => {
+        setCanvasRunFont(context, fontKey, fontSize, run.type);
+        context.fillText(run.text, cursor, centerY);
+        cursor += run.width;
+      });
     };
 
     const buildPrintCanvas = async ({ design, text, fontKey, mirrored = false }) => {
@@ -951,14 +1095,7 @@
       const normalizedText = String(text || '').trim();
       const hasText = normalizedText.length > 0;
 
-      if (hasText && document.fonts?.ready) {
-        await document.fonts.ready;
-        const option = getFontOption(fontKey);
-        await Promise.allSettled([
-          document.fonts.load(`${option.fontStyle} ${option.fontWeight} 96px ${option.fontFamily}`),
-          document.fonts.load('900 96px "Noto Sans TC"')
-        ]);
-      }
+      if (hasText) await ensureRenderingFonts(fontKey, normalizedText);
 
       const image = await loadPrintImage(design.printImage);
       const width = image.naturalWidth;
@@ -972,11 +1109,11 @@
 
       let fontSize = initialFontSize;
       const maxTextWidth = width * PRINT_TEXT_LAYOUT.maxWidthRatio;
+      let textLayout = measureTextLayout(workContext, normalizedText, fontKey, fontSize);
       if (hasText) {
-        setCanvasTextFont(workContext, fontKey, fontSize);
-        while (fontSize > minimumFontSize && workContext.measureText(normalizedText).width > maxTextWidth) {
+        while (fontSize > minimumFontSize && textLayout.renderWidth > maxTextWidth) {
           fontSize -= 2;
-          setCanvasTextFont(workContext, fontKey, fontSize);
+          textLayout = measureTextLayout(workContext, normalizedText, fontKey, fontSize);
         }
       }
 
@@ -988,11 +1125,15 @@
       context.clearRect(0, 0, workCanvas.width, workCanvas.height);
       context.drawImage(image, 0, 0);
       if (hasText) {
-        context.textAlign = 'center';
-        context.textBaseline = 'middle';
         context.fillStyle = '#17221e';
-        setCanvasTextFont(context, fontKey, fontSize);
-        context.fillText(normalizedText, width / 2, image.naturalHeight + gap + lineHeight / 2, maxTextWidth);
+        drawCenteredTextLayout(
+          context,
+          textLayout,
+          fontKey,
+          fontSize,
+          width / 2,
+          image.naturalHeight + gap + lineHeight / 2
+        );
       }
 
       if (!mirrored) return workCanvas;
@@ -1027,6 +1168,11 @@
         previewCanvas.getContext('2d').drawImage(renderedCanvas, 0, 0);
       } catch (error) {
         console.error('Print preview error:', error);
+        const errBox = document.getElementById('textError');
+        if (errBox && text) {
+          errBox.textContent = '字型或 Emoji 素材尚未載入完成，請確認網路後再試一次。';
+          errBox.classList.remove('hidden-view');
+        }
       }
     };
 
@@ -1036,6 +1182,27 @@
       element.style.fontFamily = option.fontFamily;
       element.style.fontWeight = option.fontWeight;
       element.style.fontStyle = option.fontStyle;
+    };
+
+    const renderStyledText = (element, text, fontKey) => {
+      if (!element) return;
+      applyFontToElement(element, fontKey);
+      element.replaceChildren();
+
+      getTextRuns(text).forEach(run => {
+        const span = document.createElement('span');
+        span.textContent = run.text;
+        if (run.type === 'emoji') {
+          span.style.fontFamily = EMOJI_FONT_FAMILY;
+          span.style.fontWeight = '400';
+          span.style.fontStyle = 'normal';
+        } else if (run.type === 'cjk') {
+          span.style.fontFamily = CJK_FONT_FAMILY;
+          span.style.fontWeight = '900';
+          span.style.fontStyle = 'normal';
+        }
+        element.appendChild(span);
+      });
     };
 
     const fitMockupText = (element, text, fontKey, giftName) => {
@@ -1052,10 +1219,10 @@
       if (normalizedText) {
         const measurementCanvas = document.createElement('canvas');
         const measurementContext = measurementCanvas.getContext('2d');
-        setCanvasTextFont(measurementContext, fontKey, fontSize);
-        while (fontSize > minimumFontSize && measurementContext.measureText(normalizedText).width > maxTextWidth) {
+        let textLayout = measureTextLayout(measurementContext, normalizedText, fontKey, fontSize);
+        while (fontSize > minimumFontSize && textLayout.renderWidth > maxTextWidth) {
           fontSize -= .25;
-          setCanvasTextFont(measurementContext, fontKey, fontSize);
+          textLayout = measureTextLayout(measurementContext, normalizedText, fontKey, fontSize);
         }
       }
 
@@ -1105,20 +1272,19 @@
 
     window.updateLivePreview = () => {
       const input = document.getElementById('inputText');
-      const text = input ? input.value : '';
+      const text = limitTextInput(input, 20);
       const displayText = text.trim();
       const previewText = document.getElementById('livePreviewText');
       const option = getFontOption(orderDraft.fontKey);
 
       if (previewText) {
-        previewText.textContent = displayText;
-        applyFontToElement(previewText, option.key);
+        renderStyledText(previewText, displayText, option.key);
         const fontSize = fitMockupText(previewText, displayText, option.key, orderDraft.gift);
         positionMockupText(previewText, orderDraft.gift, fontSize);
       }
 
       const counter = document.getElementById('textCounter');
-      if (counter) counter.textContent = `${Array.from(text).length} / 20`;
+      if (counter) counter.textContent = `${splitGraphemes(text).length} / 20`;
 
       const fontName = document.getElementById('livePreviewFontName');
       if (fontName) fontName.textContent = option.name;
@@ -1368,7 +1534,7 @@
       switchFrontView('text');
     };
 
-    window.handleTextSubmit = () => {
+    window.handleTextSubmit = async () => {
       const text = document.getElementById('inputText').value.trim();
       const errBox = document.getElementById('textError');
       errBox.classList.add('hidden-view');
@@ -1394,6 +1560,15 @@
         );
         return;
       }
+
+      try {
+        await ensureRenderingFonts(orderDraft.fontKey, text);
+      } catch (error) {
+        console.error('Font loading error:', error);
+        errBox.textContent = '字型或 Emoji 素材尚未載入完成，請確認網路後再試一次。';
+        errBox.classList.remove('hidden-view');
+        return;
+      }
       continueToPhone();
     };
 
@@ -1413,12 +1588,14 @@
       orderDraft.phone = phone;
       document.getElementById('confirmGift').innerText = orderDraft.gift;
       document.getElementById('confirmDesignImage').src = orderDraft.designImage;
-      document.getElementById('confirmText').innerText = orderDraft.text || '不加文字';
-      document.getElementById('confirmMockupText').innerText = orderDraft.text;
+      const confirmText = document.getElementById('confirmText');
+      const confirmMockupText = document.getElementById('confirmMockupText');
+      if (orderDraft.text) renderStyledText(confirmText, orderDraft.text, orderDraft.fontKey);
+      else confirmText.innerText = '不加文字';
+      renderStyledText(confirmMockupText, orderDraft.text, orderDraft.fontKey);
       document.getElementById('confirmFontName').innerText = orderDraft.text ? orderDraft.fontName : '不適用';
       document.getElementById('confirmPhone').innerText = orderDraft.phone;
-      applyFontToElement(document.getElementById('confirmText'), orderDraft.fontKey);
-      applyFontToElement(document.getElementById('confirmMockupText'), orderDraft.fontKey);
+      applyFontToElement(confirmText, orderDraft.fontKey);
       switchFrontView('confirm');
       requestAnimationFrame(() => {
         const confirmMockupText = document.getElementById('confirmMockupText');
@@ -1612,10 +1789,9 @@
         });
         const blob = await canvasToPngBlob(canvas);
         const objectUrl = URL.createObjectURL(blob);
-        const safeText = String(order.customText || '').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 20) || '不加文字';
         const link = document.createElement('a');
         link.href = objectUrl;
-        link.download = `${order.sequenceId || 'order'}_${order.gift}_${safeText}_水平反轉.png`;
+        link.download = `${order.sequenceId || 'order'}.png`;
         document.body.appendChild(link);
         link.click();
         link.remove();
