@@ -34,7 +34,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 
   <style>
     @font-face {
@@ -141,6 +140,40 @@
       border-color: var(--forest-200);
       box-shadow: 0 0 0 2px rgba(185, 210, 196, .28);
     }
+    .text-editor {
+      min-height: 68px;
+      background: rgba(3, 31, 25, .48);
+      border: 1px solid rgba(220, 233, 225, .28);
+      color: #fff;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      cursor: text;
+    }
+    .text-editor:empty::before {
+      content: attr(data-placeholder);
+      color: rgba(220, 233, 225, .55);
+      pointer-events: none;
+    }
+    .text-editor:focus {
+      border-color: var(--forest-200);
+      box-shadow: 0 0 0 2px rgba(185, 210, 196, .28);
+    }
+    .emoji-image {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      margin: 0 .06em;
+      vertical-align: -.12em;
+      object-fit: contain;
+      user-select: all;
+    }
+    .text-editor .emoji-image {
+      width: 1.15em;
+      height: 1.15em;
+      margin: 0 .08em;
+      vertical-align: -.18em;
+      user-select: none;
+    }
 
     body,
     #frontendView,
@@ -162,17 +195,17 @@
       box-shadow: 0 10px 30px rgba(2, 25, 20, .24);
     }
     .font-cooper {
-      font-family: "Cooper Md BT", "Noto Color Emoji", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-family: "Cooper Md BT", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
       font-weight: 500;
       font-style: normal;
     }
     .font-noto-900 {
-      font-family: "Noto Sans TC", "Noto Color Emoji", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
       font-weight: 900;
       font-style: normal;
     }
     .font-centra {
-      font-family: "Centra No1", "Noto Color Emoji", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-family: "Centra No1", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
       font-weight: 700;
       font-style: italic;
     }
@@ -401,7 +434,25 @@
           
           <div class="space-y-3">
             <label class="text-base text-white/80 font-medium">請輸入要印製的文字（選填，中、英文皆可）</label>
-            <input type="text" id="inputText" oninput="updateLivePreview()" placeholder="例如: 王大明、Mike Wang 或 ❤️" class="w-full p-5 bg-black/20 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-white focus:outline-none text-xl placeholder-white/50 shadow-inner" />
+            <div class="flex items-stretch gap-2">
+              <input type="hidden" id="inputText" value="" />
+              <div id="inputTextEditor" contenteditable="true" role="textbox" aria-label="請輸入要印製的文字" data-placeholder="例如：王大明 或 Mike Wang" oninput="handleTextEditorInput()" onkeyup="rememberEmojiInsertionPoint()" onmouseup="rememberEmojiInsertionPoint()" onpaste="handleTextEditorPaste(event)" onkeydown="handleTextEditorKeydown(event)" class="text-editor min-w-0 flex-1 p-5 rounded-xl focus:outline-none text-xl shadow-inner"></div>
+              <button type="button" id="emojiPickerButton" onpointerdown="rememberEmojiInsertionPoint()" onclick="toggleEmojiPicker()" aria-label="選擇 Emoji" aria-expanded="false" aria-controls="emojiPicker" class="w-[68px] shrink-0 rounded-xl border border-white/25 bg-white/10 text-white hover:bg-white/20 active:scale-95 transition flex flex-col items-center justify-center gap-1 shadow-inner">
+                <i data-lucide="smile-plus" class="w-6 h-6"></i>
+                <span class="text-[11px] font-semibold leading-none">Emoji</span>
+              </button>
+            </div>
+            <div id="emojiPicker" class="hidden-view rounded-2xl border border-white/25 bg-[#062f28] p-3 shadow-2xl" role="dialog" aria-label="選擇支援的 Emoji">
+              <div class="flex items-center justify-between gap-3 mb-2">
+                <p class="text-sm font-semibold text-white">選擇支援的 Emoji</p>
+                <button type="button" onclick="closeEmojiPicker()" aria-label="關閉 Emoji 選單" class="w-8 h-8 rounded-full text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+              <div id="emojiPickerContent" class="max-h-80 overflow-y-auto pr-1 space-y-3"></div>
+              <p class="mt-3 text-xs leading-relaxed text-white/60">為確保平板預覽與下載圖一致，請使用此清單內的 Emoji。圖示素材：Twemoji。</p>
+            </div>
+            <div id="emojiError" class="hidden-view rounded-xl border border-amber-300/40 bg-amber-100/95 px-3 py-2 text-sm font-semibold leading-relaxed text-amber-900" role="alert"></div>
             <div class="flex items-center justify-between gap-3 text-sm text-white/70">
               <p>文字位置固定於主圖下方</p>
               <span id="textCounter" class="shrink-0">0 / 20</span>
@@ -885,7 +936,7 @@
         name: 'Noto Sans TC 900',
         className: 'font-noto-900',
         primaryFamily: '"Noto Sans TC"',
-        fontFamily: '"Noto Sans TC", "Noto Color Emoji", "PingFang TC", "Microsoft JhengHei", sans-serif',
+        fontFamily: '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
         fontWeight: '900',
         fontStyle: 'normal'
       },
@@ -894,7 +945,7 @@
         name: 'Cooper Md BT',
         className: 'font-cooper',
         primaryFamily: '"Cooper Md BT"',
-        fontFamily: '"Cooper Md BT", "Noto Color Emoji", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
+        fontFamily: '"Cooper Md BT", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
         fontWeight: '500',
         fontStyle: 'normal'
       },
@@ -903,19 +954,51 @@
         name: 'Centra No1',
         className: 'font-centra',
         primaryFamily: '"Centra No1"',
-        fontFamily: '"Centra No1", "Noto Color Emoji", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
+        fontFamily: '"Centra No1", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif',
         fontWeight: '700',
         fontStyle: 'italic'
       }
     };
 
-    const EMOJI_FONT_FAMILY = '"Noto Color Emoji"';
     const CJK_FONT_FAMILY = '"Noto Sans TC"';
+    const TWEMOJI_ASSET_BASE = 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@17.0.3/assets/svg/';
+    const emojiImageCache = new Map();
+    const emojiResolvedImages = new Map();
     const graphemeSegmenter = typeof Intl?.Segmenter === 'function'
       ? new Intl.Segmenter('zh-TW', { granularity: 'grapheme' })
       : null;
     const emojiGraphemePattern = /[\p{Extended_Pictographic}\p{Regional_Indicator}\uFE0F\u20E3]/u;
     const latinGraphemePattern = /^(?:\p{Script=Latin}[\p{Mark}]*)$|^[\p{Number}\p{Punctuation}\p{Separator}]+$/u;
+
+    const SUPPORTED_EMOJI_GROUPS = [
+      {
+        label: '表情',
+        items: ['😊', '😄', '🥰', '😍', '😎', '🤗', '😉', '😂']
+      },
+      {
+        label: '愛心與慶祝',
+        items: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '⭐', '✨', '🎉', '🎂', '🌸', '🌼', '🍁', '🔥', '👍']
+      },
+      {
+        label: '食物',
+        items: ['🍎', '🍓', '🍉', '🍌', '🍕', '🍔', '🍟', '🍣', '🍙', '🍜', '🍦', '🍩', '🍪', '☕', '🧋']
+      },
+      {
+        label: '動物',
+        items: ['🐶', '🐱', '🐰', '🐻', '🐼', '🐨', '🦊', '🐯', '🐸', '🐧', '🐥', '🐷', '🦁', '🐵']
+      },
+      {
+        label: '日常用品',
+        items: ['🎁', '🎈', '🎀', '👑', '🧢', '👓', '👜', '📷', '🎧', '⚽', '🏀', '🚲', '🚗', '✈️', '💡']
+      },
+      {
+        label: '國旗',
+        items: ['🇹🇼', '🇨🇦', '🇺🇸', '🇯🇵', '🇰🇷', '🇬🇧', '🇫🇷', '🇩🇪', '🇮🇹', '🇦🇺', '🇳🇿', '🇸🇬', '🇹🇭', '🇻🇳', '🇵🇭', '🇲🇾', '🇮🇩', '🇭🇰', '🇲🇴', '🇨🇳']
+      }
+    ];
+    const supportedEmojiSet = new Set(SUPPORTED_EMOJI_GROUPS.flatMap(group => group.items));
+    let emojiInsertionRange = null;
+    let emojiErrorTimer = 0;
 
     const splitGraphemes = (value) => {
       const text = String(value || '');
@@ -930,10 +1013,71 @@
       return 'cjk';
     };
 
+    const getEmojiAssetCode = (emoji) => Array.from(emoji)
+      .map(character => character.codePointAt(0).toString(16))
+      .filter(code => code !== 'fe0f')
+      .join('-');
+
+    const getEmojiAssetUrl = (emoji) => `${TWEMOJI_ASSET_BASE}${getEmojiAssetCode(emoji)}.svg`;
+
+    const createEmojiImageElement = (emoji, className = 'emoji-image') => {
+      const image = document.createElement('img');
+      image.src = getEmojiAssetUrl(emoji);
+      image.alt = emoji;
+      image.dataset.emoji = emoji;
+      image.className = className;
+      image.draggable = false;
+      image.setAttribute('contenteditable', 'false');
+      return image;
+    };
+
+    const loadEmojiImage = (emoji) => {
+      if (emojiImageCache.has(emoji)) return emojiImageCache.get(emoji);
+      const promise = new Promise((resolve, reject) => {
+        const image = new Image();
+        image.crossOrigin = 'anonymous';
+        image.onload = () => {
+          emojiResolvedImages.set(emoji, image);
+          resolve(image);
+        };
+        image.onerror = () => reject(new Error(`Emoji 素材載入失敗：${emoji}`));
+        image.src = getEmojiAssetUrl(emoji);
+      });
+      emojiImageCache.set(emoji, promise);
+      return promise;
+    };
+
+    const getUnsupportedEmoji = (text) => splitGraphemes(text).filter(grapheme => (
+      getGraphemeType(grapheme) === 'emoji' && !supportedEmojiSet.has(grapheme)
+    ));
+
+    const showEmojiError = (message = '此 Emoji 目前不支援，請使用右側 Emoji 選單。') => {
+      const errorBox = document.getElementById('emojiError');
+      if (!errorBox) return;
+      window.clearTimeout(emojiErrorTimer);
+      errorBox.textContent = message;
+      errorBox.classList.remove('hidden-view');
+      emojiErrorTimer = window.setTimeout(() => errorBox.classList.add('hidden-view'), 4500);
+    };
+
+    const removeUnsupportedEmoji = (input) => {
+      if (!input) return false;
+      const graphemes = splitGraphemes(input.value);
+      const unsupported = graphemes.filter(grapheme => (
+        getGraphemeType(grapheme) === 'emoji' && !supportedEmojiSet.has(grapheme)
+      ));
+      if (!unsupported.length) return false;
+      input.value = graphemes.filter(grapheme => (
+        getGraphemeType(grapheme) !== 'emoji' || supportedEmojiSet.has(grapheme)
+      )).join('');
+      showEmojiError();
+      return true;
+    };
+
     const getTextRuns = (text) => splitGraphemes(text).reduce((runs, grapheme) => {
       const type = getGraphemeType(grapheme);
       const previous = runs[runs.length - 1];
-      if (previous?.type === type) previous.text += grapheme;
+      if (type !== 'emoji' && previous?.type === type) previous.text += grapheme;
       else runs.push({ type, text: grapheme });
       return runs;
     }, []);
@@ -943,6 +1087,106 @@
       const graphemes = splitGraphemes(input.value);
       if (graphemes.length > maximum) input.value = graphemes.slice(0, maximum).join('');
       return input.value;
+    };
+
+    const readTextEditorValue = () => {
+      const editor = document.getElementById('inputTextEditor');
+      if (!editor) return '';
+      const readNode = node => {
+        if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || '';
+        if (node.nodeType !== Node.ELEMENT_NODE) return '';
+        if (node.matches?.('img[data-emoji]')) return node.dataset.emoji || '';
+        return Array.from(node.childNodes).map(readNode).join('');
+      };
+      return Array.from(editor.childNodes).map(readNode).join('').replace(/[\r\n]+/g, ' ');
+    };
+
+    const setTextEditorContent = (value, moveCaretToEnd = false) => {
+      const editor = document.getElementById('inputTextEditor');
+      if (!editor) return;
+      const fragment = document.createDocumentFragment();
+      splitGraphemes(value).forEach(grapheme => {
+        if (getGraphemeType(grapheme) === 'emoji' && supportedEmojiSet.has(grapheme)) {
+          fragment.appendChild(createEmojiImageElement(grapheme));
+        } else {
+          fragment.appendChild(document.createTextNode(grapheme));
+        }
+      });
+      editor.replaceChildren(fragment);
+      if (moveCaretToEnd) {
+        const range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        emojiInsertionRange = range.cloneRange();
+      }
+    };
+
+    const syncTextEditorToInput = () => {
+      const input = document.getElementById('inputText');
+      const editor = document.getElementById('inputTextEditor');
+      if (!input || !editor) return '';
+
+      const rawValue = readTextEditorValue();
+      const rawGraphemes = splitGraphemes(rawValue);
+      const unsupported = rawGraphemes.filter(grapheme => (
+        getGraphemeType(grapheme) === 'emoji' && !supportedEmojiSet.has(grapheme)
+      ));
+      const supported = rawGraphemes.filter(grapheme => (
+        getGraphemeType(grapheme) !== 'emoji' || supportedEmojiSet.has(grapheme)
+      ));
+      const limited = supported.slice(0, 20);
+      const normalizedValue = limited.join('');
+      const textWalker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
+      let hasTextEmoji = false;
+      while (textWalker.nextNode()) {
+        if (splitGraphemes(textWalker.currentNode.nodeValue || '').some(grapheme => getGraphemeType(grapheme) === 'emoji')) {
+          hasTextEmoji = true;
+          break;
+        }
+      }
+
+      input.value = normalizedValue;
+      if (unsupported.length) showEmojiError();
+      else if (supported.length > 20) showEmojiError('文字與 Emoji 合計最多 20 個字元。');
+
+      if (unsupported.length || supported.length > 20 || hasTextEmoji || (!normalizedValue && editor.childNodes.length)) {
+        setTextEditorContent(normalizedValue, true);
+      }
+      return normalizedValue;
+    };
+
+    window.handleTextEditorInput = () => {
+      syncTextEditorToInput();
+      window.updateLivePreview(true);
+    };
+
+    window.handleTextEditorKeydown = event => {
+      if (event.key === 'Enter') event.preventDefault();
+    };
+
+    window.handleTextEditorPaste = event => {
+      event.preventDefault();
+      const editor = document.getElementById('inputTextEditor');
+      if (!editor) return;
+      const pastedText = (event.clipboardData?.getData('text/plain') || '').replace(/[\r\n]+/g, ' ');
+      const selection = window.getSelection();
+      let range = selection.rangeCount ? selection.getRangeAt(0) : null;
+      if (!range || !editor.contains(range.commonAncestorContainer)) {
+        range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false);
+      }
+      range.deleteContents();
+      const textNode = document.createTextNode(pastedText);
+      range.insertNode(textNode);
+      range.setStartAfter(textNode);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      window.handleTextEditorInput();
     };
 
     const createSubmissionKey = () => globalThis.crypto?.randomUUID?.()
@@ -999,10 +1243,6 @@
     };
 
     const setCanvasRunFont = (context, fontKey, fontSize, runType) => {
-      if (runType === 'emoji') {
-        context.font = `normal 400 ${fontSize}px ${EMOJI_FONT_FAMILY}`;
-        return;
-      }
       if (runType === 'cjk') {
         context.font = `normal 900 ${fontSize}px ${CJK_FONT_FAMILY}`;
         return;
@@ -1011,32 +1251,26 @@
     };
 
     const ensureRenderingFonts = async (fontKey, text) => {
-      if (!text || !document.fonts?.load) return;
+      if (!text) return;
       const option = getFontOption(fontKey);
       const runs = getTextRuns(text);
       const requests = [];
 
       const latinSample = runs.filter(run => run.type === 'latin').map(run => run.text).join('');
       const cjkSample = runs.filter(run => run.type === 'cjk').map(run => run.text).join('');
-      const emojiSample = runs.filter(run => run.type === 'emoji').map(run => run.text).join('');
+      const emojiItems = [...new Set(runs.filter(run => run.type === 'emoji').map(run => run.text))];
 
-      if (latinSample) {
+      if (latinSample && document.fonts?.load) {
         const style = option.fontStyle === 'italic' ? 'italic' : 'normal';
         requests.push({
           label: option.name,
           promise: document.fonts.load(`${style} ${option.fontWeight} 96px ${option.primaryFamily}`, latinSample)
         });
       }
-      if (cjkSample) {
+      if (cjkSample && document.fonts?.load) {
         requests.push({
           label: 'Noto Sans TC 900',
           promise: document.fonts.load(`normal 900 96px ${CJK_FONT_FAMILY}`, cjkSample)
-        });
-      }
-      if (emojiSample) {
-        requests.push({
-          label: 'Noto Color Emoji',
-          promise: document.fonts.load(`normal 400 96px ${EMOJI_FONT_FAMILY}`, emojiSample)
         });
       }
 
@@ -1046,6 +1280,7 @@
       })));
       const missing = results.find(result => !result.faces?.length);
       if (missing) throw new Error(`${missing.label} 字型尚未載入完成`);
+      await Promise.all(emojiItems.map(loadEmojiImage));
     };
 
     const measureTextLayout = (context, text, fontKey, fontSize) => {
@@ -1055,6 +1290,15 @@
       let visibleRight = Number.NEGATIVE_INFINITY;
 
       const measuredRuns = runs.map(run => {
+        if (run.type === 'emoji') {
+          const width = fontSize * 1.05;
+          const left = cursor;
+          const right = cursor + width;
+          visibleLeft = Math.min(visibleLeft, left);
+          visibleRight = Math.max(visibleRight, right);
+          cursor += width;
+          return { ...run, width };
+        }
         setCanvasRunFont(context, fontKey, fontSize, run.type);
         const metrics = context.measureText(run.text);
         const left = cursor - Number(metrics.actualBoundingBoxLeft || 0);
@@ -1083,6 +1327,15 @@
       context.textBaseline = 'middle';
 
       layout.runs.forEach(run => {
+        if (run.type === 'emoji') {
+          const emojiImage = emojiResolvedImages.get(run.text);
+          if (emojiImage) {
+            const size = fontSize;
+            context.drawImage(emojiImage, cursor + (run.width - size) / 2, centerY - size / 2, size, size);
+          }
+          cursor += run.width;
+          return;
+        }
         setCanvasRunFont(context, fontKey, fontSize, run.type);
         context.fillText(run.text, cursor, centerY);
         cursor += run.width;
@@ -1190,13 +1443,13 @@
       element.replaceChildren();
 
       getTextRuns(text).forEach(run => {
+        if (run.type === 'emoji') {
+          element.appendChild(createEmojiImageElement(run.text));
+          return;
+        }
         const span = document.createElement('span');
         span.textContent = run.text;
-        if (run.type === 'emoji') {
-          span.style.fontFamily = EMOJI_FONT_FAMILY;
-          span.style.fontWeight = '400';
-          span.style.fontStyle = 'normal';
-        } else if (run.type === 'cjk') {
+        if (run.type === 'cjk') {
           span.style.fontFamily = CJK_FONT_FAMILY;
           span.style.fontWeight = '900';
           span.style.fontStyle = 'normal';
@@ -1270,9 +1523,95 @@
       updateLivePreview();
     };
 
-    window.updateLivePreview = () => {
+    const renderEmojiPicker = () => {
+      const pickerContent = document.getElementById('emojiPickerContent');
+      if (!pickerContent) return;
+      pickerContent.innerHTML = '';
+
+      SUPPORTED_EMOJI_GROUPS.forEach(group => {
+        const section = document.createElement('section');
+        const heading = document.createElement('p');
+        heading.className = 'mb-1.5 text-xs font-semibold text-white/60';
+        heading.textContent = group.label;
+
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-cols-7 gap-1.5';
+        group.items.forEach(emoji => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'h-10 rounded-lg border border-white/10 bg-white/5 text-2xl hover:bg-white/15 active:scale-90 transition flex items-center justify-center';
+          button.appendChild(createEmojiImageElement(emoji, 'w-7 h-7 object-contain pointer-events-none'));
+          button.setAttribute('aria-label', `插入 ${emoji}`);
+          button.addEventListener('click', () => window.insertSupportedEmoji(emoji));
+          grid.appendChild(button);
+        });
+
+        section.append(heading, grid);
+        pickerContent.appendChild(section);
+      });
+    };
+
+    window.rememberEmojiInsertionPoint = () => {
+      const editor = document.getElementById('inputTextEditor');
+      const selection = window.getSelection();
+      if (!editor || !selection?.rangeCount) return;
+      const range = selection.getRangeAt(0);
+      if (editor === range.commonAncestorContainer || editor.contains(range.commonAncestorContainer)) {
+        emojiInsertionRange = range.cloneRange();
+      }
+    };
+
+    window.toggleEmojiPicker = () => {
+      const picker = document.getElementById('emojiPicker');
+      const button = document.getElementById('emojiPickerButton');
+      if (!picker || !button) return;
+      const willOpen = picker.classList.contains('hidden-view');
+      picker.classList.toggle('hidden-view', !willOpen);
+      button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      if (willOpen) lucide.createIcons();
+    };
+
+    window.closeEmojiPicker = () => {
+      const picker = document.getElementById('emojiPicker');
+      const button = document.getElementById('emojiPickerButton');
+      if (picker) picker.classList.add('hidden-view');
+      if (button) button.setAttribute('aria-expanded', 'false');
+    };
+
+    window.insertSupportedEmoji = (emoji) => {
       const input = document.getElementById('inputText');
+      const editor = document.getElementById('inputTextEditor');
+      if (!input || !editor || !supportedEmojiSet.has(emoji)) return;
+      if (splitGraphemes(input.value).length >= 20 && (!emojiInsertionRange || emojiInsertionRange.collapsed)) {
+        showEmojiError('文字與 Emoji 合計最多 20 個字元。');
+        return;
+      }
+
+      let range = emojiInsertionRange;
+      if (!range || !(editor === range.commonAncestorContainer || editor.contains(range.commonAncestorContainer))) {
+        range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false);
+      }
+      range.deleteContents();
+      const emojiImage = createEmojiImageElement(emoji);
+      range.insertNode(emojiImage);
+      range.setStartAfter(emojiImage);
+      range.collapse(true);
+      emojiInsertionRange = range.cloneRange();
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      syncTextEditorToInput();
+      updateLivePreview(true);
+    };
+
+    window.updateLivePreview = (skipEditorSync = false) => {
+      const input = document.getElementById('inputText');
+      if (!skipEditorSync) syncTextEditorToInput();
+      removeUnsupportedEmoji(input);
       const text = limitTextInput(input, 20);
+      rememberEmojiInsertionPoint();
       const displayText = text.trim();
       const previewText = document.getElementById('livePreviewText');
       const option = getFontOption(orderDraft.fontKey);
@@ -1440,6 +1779,7 @@
       document.getElementById('submitError').classList.add('hidden-view');
       document.getElementById('searchError').classList.add('hidden-view');
       document.getElementById('searchResultCard').classList.add('hidden-view');
+      if (view !== 'text') closeEmojiPicker();
       
       if (view === 'home') {
         const configuredVenue = getConfiguredVenue();
@@ -1456,6 +1796,8 @@
         };
         setSubmitState(false);
         document.getElementById('inputText').value = '';
+        setTextEditorContent('');
+        emojiInsertionRange = null;
         document.getElementById('inputPhone').value = '';
         document.getElementById('searchSeq').value = '';
         selectFont('noto900');
@@ -1535,9 +1877,15 @@
     };
 
     window.handleTextSubmit = async () => {
-      const text = document.getElementById('inputText').value.trim();
+      const input = document.getElementById('inputText');
       const errBox = document.getElementById('textError');
       errBox.classList.add('hidden-view');
+
+      if (removeUnsupportedEmoji(input)) {
+        updateLivePreview();
+        return;
+      }
+      const text = input.value.trim();
 
       const continueToPhone = () => {
         orderDraft.text = text;
@@ -1712,12 +2060,15 @@
           </div>
           <div class="p-5 space-y-4 text-base">
             <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">選擇圖案</span><span class="font-medium text-white">${order.gift || '未紀錄'}</span></div>
-            <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">印製文字</span><span class="font-bold text-white drop-shadow-sm">${order.customText || '不加文字'}</span></div>
+            <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">印製文字</span><span id="statusOrderText" class="font-bold text-white drop-shadow-sm"></span></div>
             <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">英文字體</span><span class="text-white/90">${order.customText ? (order.fontName || '未紀錄') : '不適用'}</span></div>
             <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">聯絡手機</span><span class="text-white/90">${maskedPhone}</span></div>
             <div class="flex justify-between"><span class="text-white/70">建立時間</span><span class="text-white/60">${order.createdAt}</span></div>
           </div>
         `;
+        const statusOrderText = document.getElementById('statusOrderText');
+        if (order.customText) renderStyledText(statusOrderText, order.customText, order.fontKey);
+        else statusOrderText.textContent = '不加文字';
         resultCard.classList.remove('hidden-view'); lucide.createIcons();
       } else {
         errBox.innerText = '找不到此序號的訂單，請確認輸入是否正確';
@@ -1878,7 +2229,7 @@
               </div>
             </td>
             <td class="p-5 text-emerald-800">
-              <div class="${order.customText ? orderFont.className : ''} font-bold text-lg">${order.customText || '不加文字'}</div>
+              <div id="backendOrderText-${order.id}" class="${order.customText ? orderFont.className : ''} font-bold text-lg"></div>
               <div class="text-xs text-slate-400 mt-1 not-italic">${order.customText ? (order.fontName || '未紀錄') : '字體不適用'}</div>
             </td>
             <td class="p-5"><select onchange="changeOrderStatus('${order.id}', this.value)" class="${selectClass}" style="background-image: url('data:image/svg+xml,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'none\\' viewBox=\\'0 0 20 20\\'%3e%3cpath stroke=\\'%236b7280\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M6 8l4 4 4-4\\'/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"><option value="處理中" ${order.status === '處理中' ? 'selected' : ''}>處理中</option><option value="完成" ${order.status === '完成' ? 'selected' : ''}>完成</option><option value="取消" ${order.status === '取消' ? 'selected' : ''}>取消 (解鎖)</option></select></td>
@@ -1891,7 +2242,13 @@
             <td class="p-5">${noteHtml}</td>
           </tr>`;
       });
-      tbody.innerHTML = html; lucide.createIcons();
+      tbody.innerHTML = html;
+      filteredOrders.forEach(order => {
+        const textElement = document.getElementById(`backendOrderText-${order.id}`);
+        if (order.customText) renderStyledText(textElement, order.customText, order.fontKey);
+        else if (textElement) textElement.textContent = '不加文字';
+      });
+      lucide.createIcons();
     };
     window.renderOrdersTable = renderOrdersTable;
 
@@ -1914,9 +2271,12 @@
     };
 
     renderDesignGrid();
+    renderEmojiPicker();
     lucide.createIcons();
     initApp();
 
   </script>
 </body>
 </html>
+
+    
