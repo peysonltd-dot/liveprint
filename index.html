@@ -435,8 +435,7 @@
           <div class="space-y-3">
             <label class="text-base text-white/80 font-medium">請輸入要印製的文字（選填，中、英文皆可）</label>
             <div class="flex items-stretch gap-2">
-              <input type="hidden" id="inputText" value="" />
-              <div id="inputTextEditor" contenteditable="true" role="textbox" aria-label="請輸入要印製的文字" data-placeholder="例如：王大明 或 Mike Wang" oninput="handleTextEditorInput()" onkeyup="rememberEmojiInsertionPoint()" onmouseup="rememberEmojiInsertionPoint()" onpaste="handleTextEditorPaste(event)" onkeydown="handleTextEditorKeydown(event)" class="text-editor min-w-0 flex-1 p-5 rounded-xl focus:outline-none text-xl shadow-inner"></div>
+              <input type="text" id="inputText" value="" placeholder="例如：王大明 或 Mike Wang" inputmode="text" enterkeyhint="done" autocomplete="off" spellcheck="false" aria-label="請輸入要印製的文字" oninput="handleTextEditorInput(event)" oncompositionend="handleTextEditorInput(event)" onkeyup="rememberEmojiInsertionPoint()" onmouseup="rememberEmojiInsertionPoint()" ontouchend="rememberEmojiInsertionPoint()" onselect="rememberEmojiInsertionPoint()" onfocus="rememberEmojiInsertionPoint()" class="text-editor min-w-0 flex-1 p-5 rounded-xl focus:outline-none text-xl shadow-inner" />
               <button type="button" id="emojiPickerButton" onpointerdown="rememberEmojiInsertionPoint()" onclick="toggleEmojiPicker()" aria-label="選擇 Emoji" aria-expanded="false" aria-controls="emojiPicker" class="w-[68px] shrink-0 rounded-xl border border-white/25 bg-white/10 text-white hover:bg-white/20 active:scale-95 transition flex flex-col items-center justify-center gap-1 shadow-inner">
                 <i data-lucide="smile-plus" class="w-6 h-6"></i>
                 <span class="text-[11px] font-semibold leading-none">Emoji</span>
@@ -1089,104 +1088,39 @@
       return input.value;
     };
 
-    const readTextEditorValue = () => {
-      const editor = document.getElementById('inputTextEditor');
-      if (!editor) return '';
-      const readNode = node => {
-        if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || '';
-        if (node.nodeType !== Node.ELEMENT_NODE) return '';
-        if (node.matches?.('img[data-emoji]')) return node.dataset.emoji || '';
-        return Array.from(node.childNodes).map(readNode).join('');
-      };
-      return Array.from(editor.childNodes).map(readNode).join('').replace(/[\r\n]+/g, ' ');
-    };
-
-    const setTextEditorContent = (value, moveCaretToEnd = false) => {
-      const editor = document.getElementById('inputTextEditor');
-      if (!editor) return;
-      const fragment = document.createDocumentFragment();
-      splitGraphemes(value).forEach(grapheme => {
-        if (getGraphemeType(grapheme) === 'emoji' && supportedEmojiSet.has(grapheme)) {
-          fragment.appendChild(createEmojiImageElement(grapheme));
-        } else {
-          fragment.appendChild(document.createTextNode(grapheme));
-        }
-      });
-      editor.replaceChildren(fragment);
-      if (moveCaretToEnd) {
-        const range = document.createRange();
-        range.selectNodeContents(editor);
-        range.collapse(false);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-        emojiInsertionRange = range.cloneRange();
-      }
-    };
-
-    const syncTextEditorToInput = () => {
-      const input = document.getElementById('inputText');
-      const editor = document.getElementById('inputTextEditor');
-      if (!input || !editor) return '';
-
-      const rawValue = readTextEditorValue();
-      const rawGraphemes = splitGraphemes(rawValue);
-      const unsupported = rawGraphemes.filter(grapheme => (
-        getGraphemeType(grapheme) === 'emoji' && !supportedEmojiSet.has(grapheme)
-      ));
-      const supported = rawGraphemes.filter(grapheme => (
+    const sanitizeNativeTextInput = (input) => {
+      if (!input) return '';
+      const rawValue = input.value.replace(/[\r\n]+/g, ' ');
+      const selectionStart = input.selectionStart ?? rawValue.length;
+      const selectionEnd = input.selectionEnd ?? selectionStart;
+      const keepSupported = value => splitGraphemes(value).filter(grapheme => (
         getGraphemeType(grapheme) !== 'emoji' || supportedEmojiSet.has(grapheme)
       ));
-      const limited = supported.slice(0, 20);
-      const normalizedValue = limited.join('');
-      const textWalker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
-      let hasTextEmoji = false;
-      while (textWalker.nextNode()) {
-        if (splitGraphemes(textWalker.currentNode.nodeValue || '').some(grapheme => getGraphemeType(grapheme) === 'emoji')) {
-          hasTextEmoji = true;
-          break;
-        }
+      const rawGraphemes = splitGraphemes(rawValue);
+      const supported = keepSupported(rawValue);
+      const unsupported = rawGraphemes.length - supported.length;
+      const normalizedValue = supported.slice(0, 20).join('');
+
+      if (normalizedValue !== rawValue) {
+        const normalizedStart = keepSupported(rawValue.slice(0, selectionStart)).slice(0, 20).join('').length;
+        const normalizedEnd = keepSupported(rawValue.slice(0, selectionEnd)).slice(0, 20).join('').length;
+        input.value = normalizedValue;
+        input.setSelectionRange(normalizedStart, normalizedEnd);
       }
 
-      input.value = normalizedValue;
-      if (unsupported.length) showEmojiError();
+      if (unsupported) showEmojiError();
       else if (supported.length > 20) showEmojiError('文字與 Emoji 合計最多 20 個字元。');
-
-      if (unsupported.length || supported.length > 20 || hasTextEmoji || (!normalizedValue && editor.childNodes.length)) {
-        setTextEditorContent(normalizedValue, true);
-      }
       return normalizedValue;
     };
 
-    window.handleTextEditorInput = () => {
-      syncTextEditorToInput();
-      window.updateLivePreview(true);
-    };
-
-    window.handleTextEditorKeydown = event => {
-      if (event.key === 'Enter') event.preventDefault();
-    };
-
-    window.handleTextEditorPaste = event => {
-      event.preventDefault();
-      const editor = document.getElementById('inputTextEditor');
-      if (!editor) return;
-      const pastedText = (event.clipboardData?.getData('text/plain') || '').replace(/[\r\n]+/g, ' ');
-      const selection = window.getSelection();
-      let range = selection.rangeCount ? selection.getRangeAt(0) : null;
-      if (!range || !editor.contains(range.commonAncestorContainer)) {
-        range = document.createRange();
-        range.selectNodeContents(editor);
-        range.collapse(false);
-      }
-      range.deleteContents();
-      const textNode = document.createTextNode(pastedText);
-      range.insertNode(textNode);
-      range.setStartAfter(textNode);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
-      window.handleTextEditorInput();
+    let nativePreviewFrame = 0;
+    window.handleTextEditorInput = event => {
+      if (event?.isComposing) return;
+      const input = document.getElementById('inputText');
+      sanitizeNativeTextInput(input);
+      rememberEmojiInsertionPoint();
+      cancelAnimationFrame(nativePreviewFrame);
+      nativePreviewFrame = requestAnimationFrame(() => window.updateLivePreview(true));
     };
 
     const createSubmissionKey = () => globalThis.crypto?.randomUUID?.()
@@ -1552,13 +1486,11 @@
     };
 
     window.rememberEmojiInsertionPoint = () => {
-      const editor = document.getElementById('inputTextEditor');
-      const selection = window.getSelection();
-      if (!editor || !selection?.rangeCount) return;
-      const range = selection.getRangeAt(0);
-      if (editor === range.commonAncestorContainer || editor.contains(range.commonAncestorContainer)) {
-        emojiInsertionRange = range.cloneRange();
-      }
+      const input = document.getElementById('inputText');
+      if (!input) return;
+      const start = input.selectionStart ?? input.value.length;
+      const end = input.selectionEnd ?? start;
+      emojiInsertionRange = { start, end };
     };
 
     window.toggleEmojiPicker = () => {
@@ -1580,35 +1512,32 @@
 
     window.insertSupportedEmoji = (emoji) => {
       const input = document.getElementById('inputText');
-      const editor = document.getElementById('inputTextEditor');
-      if (!input || !editor || !supportedEmojiSet.has(emoji)) return;
-      if (splitGraphemes(input.value).length >= 20 && (!emojiInsertionRange || emojiInsertionRange.collapsed)) {
+      if (!input || !supportedEmojiSet.has(emoji)) return;
+
+      const storedStart = emojiInsertionRange?.start ?? input.value.length;
+      const storedEnd = emojiInsertionRange?.end ?? storedStart;
+      const start = Math.max(0, Math.min(storedStart, input.value.length));
+      const end = Math.max(start, Math.min(storedEnd, input.value.length));
+      const nextValue = `${input.value.slice(0, start)}${emoji}${input.value.slice(end)}`;
+      if (splitGraphemes(nextValue).length > 20) {
         showEmojiError('文字與 Emoji 合計最多 20 個字元。');
         return;
       }
 
-      let range = emojiInsertionRange;
-      if (!range || !(editor === range.commonAncestorContainer || editor.contains(range.commonAncestorContainer))) {
-        range = document.createRange();
-        range.selectNodeContents(editor);
-        range.collapse(false);
+      input.value = nextValue;
+      const caretPosition = start + emoji.length;
+      emojiInsertionRange = { start: caretPosition, end: caretPosition };
+      try {
+        input.focus({ preventScroll: true });
+      } catch (error) {
+        input.focus();
       }
-      range.deleteContents();
-      const emojiImage = createEmojiImageElement(emoji);
-      range.insertNode(emojiImage);
-      range.setStartAfter(emojiImage);
-      range.collapse(true);
-      emojiInsertionRange = range.cloneRange();
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
-      syncTextEditorToInput();
+      input.setSelectionRange(caretPosition, caretPosition);
       updateLivePreview(true);
     };
 
     window.updateLivePreview = (skipEditorSync = false) => {
       const input = document.getElementById('inputText');
-      if (!skipEditorSync) syncTextEditorToInput();
       removeUnsupportedEmoji(input);
       const text = limitTextInput(input, 20);
       rememberEmojiInsertionPoint();
@@ -1796,7 +1725,6 @@
         };
         setSubmitState(false);
         document.getElementById('inputText').value = '';
-        setTextEditorContent('');
         emojiInsertionRange = null;
         document.getElementById('inputPhone').value = '';
         document.getElementById('searchSeq').value = '';
