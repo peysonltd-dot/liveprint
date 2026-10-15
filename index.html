@@ -755,6 +755,20 @@
               </div>
             </div>
             <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+              <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center gap-3"><i data-lucide="flip-horizontal-2" class="w-6 h-6 text-emerald-700"></i> 下載圖檔設定</h3>
+              <p class="text-slate-500 text-sm leading-relaxed mb-5">此設定只影響目前這台後台電腦下載的 PNG，不會修改訂單內容或前台預覽。</p>
+              <label class="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 cursor-pointer select-none">
+                <span>
+                  <span class="block font-bold text-slate-800">下載時水平反轉</span>
+                  <span class="block mt-1 text-xs text-slate-500">取消勾選時，下載原方向的「圖案＋客製文字」。</span>
+                </span>
+                <input id="downloadMirrorSetting" type="checkbox" onchange="saveDownloadMirrorSetting(this.checked)" class="w-6 h-6 shrink-0 accent-emerald-700 cursor-pointer" />
+              </label>
+              <div class="mt-4 rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3 text-sm text-emerald-900">
+                目前下載方式：<strong id="downloadMirrorSettingLabel">水平反轉</strong>
+              </div>
+            </div>
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
               <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3"><i data-lucide="download" class="w-6 h-6 text-green-600"></i> 資料匯出</h3>
               <div class="space-y-4 text-slate-600 text-sm mb-6 leading-relaxed">
                 <p>匯出格式為標準 CSV 檔案，可直接使用 Excel 或 Google Sheets 開啟。</p>
@@ -819,6 +833,7 @@
     const VENUE_STORAGE_KEY = 'liveprint-venue-code';
     const BACKEND_VENUE_FILTER_KEY = 'liveprint-backend-venue-filter';
     const BACKEND_SIDEBAR_COLLAPSED_KEY = 'liveprint-backend-sidebar-collapsed';
+    const DOWNLOAD_MIRROR_STORAGE_KEY = 'liveprint-download-mirror';
     const APP_MODE_SESSION_KEY = 'liveprint-app-mode';
     const BACKEND_VIEW_SESSION_KEY = 'liveprint-backend-view';
 
@@ -860,6 +875,12 @@
     const getConfiguredVenue = () => getVenueByCode(readLocalSetting(VENUE_STORAGE_KEY));
     const getOrderVenueCode = (order) => getVenueByCode(order?.venueCode)?.code || '';
     const getOrderVenue = (order) => getVenueByCode(getOrderVenueCode(order));
+    const getOrderPrintText = (order) => {
+      const candidates = [order?.customText, order?.printText, order?.text];
+      const value = candidates.find(candidate => String(candidate || '').trim());
+      return String(value || '').trim();
+    };
+    const isDownloadMirrorEnabled = () => readLocalSetting(DOWNLOAD_MIRROR_STORAGE_KEY, '1') !== '0';
     const getSequenceNumber = (sequenceId) => {
       const match = String(sequenceId || '').match(/(\d+)$/);
       return match ? Number(match[1]) : 0;
@@ -1117,7 +1138,8 @@
     window.handleTextEditorInput = event => {
       if (event?.isComposing) return;
       const input = document.getElementById('inputText');
-      sanitizeNativeTextInput(input);
+      const normalizedText = sanitizeNativeTextInput(input);
+      orderDraft.text = String(normalizedText || '').trim();
       rememberEmojiInsertionPoint();
       cancelAnimationFrame(nativePreviewFrame);
       nativePreviewFrame = requestAnimationFrame(() => window.updateLivePreview(true));
@@ -1533,6 +1555,7 @@
         input.focus();
       }
       input.setSelectionRange(caretPosition, caretPosition);
+      orderDraft.text = input.value.trim();
       updateLivePreview(true);
     };
 
@@ -1542,6 +1565,7 @@
       const text = limitTextInput(input, 20);
       rememberEmojiInsertionPoint();
       const displayText = text.trim();
+      orderDraft.text = displayText;
       const previewText = document.getElementById('livePreviewText');
       const option = getFontOption(orderDraft.fontKey);
 
@@ -1617,6 +1641,21 @@
         if (!validFilter) backendVenueFilter = venue?.code || 'all';
         backendFilter.value = backendVenueFilter;
       }
+      const mirrorSetting = document.getElementById('downloadMirrorSetting');
+      const mirrorSettingLabel = document.getElementById('downloadMirrorSettingLabel');
+      const mirrorEnabled = isDownloadMirrorEnabled();
+      if (mirrorSetting) mirrorSetting.checked = mirrorEnabled;
+      if (mirrorSettingLabel) mirrorSettingLabel.textContent = mirrorEnabled ? '水平反轉' : '原方向（不反轉）';
+    };
+
+    window.saveDownloadMirrorSetting = (enabled) => {
+      if (!writeLocalSetting(DOWNLOAD_MIRROR_STORAGE_KEY, enabled ? '1' : '0')) {
+        showModal('無法儲存', '瀏覽器目前無法保存下載設定，請確認未使用私密瀏覽模式。');
+        updateVenueSettingUI();
+        return;
+      }
+      updateVenueSettingUI();
+      renderOrdersTable();
     };
 
     window.saveVenueSetting = () => {
@@ -1899,6 +1938,9 @@
       const venue = getVenueByCode(orderDraft.venueCode) || getConfiguredVenue();
       const venueCode = venue?.code || '';
       const venueName = venue?.name || '未分類';
+      // 前台預覽與正式送單共用同一個原生輸入欄位，避免預覽有字但訂單暫存值尚未同步。
+      const submissionText = String(document.getElementById('inputText')?.value ?? orderDraft.text ?? '').trim();
+      orderDraft.text = submissionText;
       
       try {
         const submissionKey = orderDraft.submissionKey || createSubmissionKey();
@@ -1908,7 +1950,18 @@
         const finalSeqStr = await runTransaction(db, async (transaction) => {
           // 同一次操作固定使用同一筆訂單 ID；即使連點或網路重試，也只會建立一筆。
           const existingOrderSnap = await transaction.get(newOrderRef);
-          if (existingOrderSnap.exists()) return existingOrderSnap.data().sequenceId;
+          if (existingOrderSnap.exists()) {
+            const existingOrder = existingOrderSnap.data();
+            if (!getOrderPrintText(existingOrder) && submissionText) {
+              transaction.update(newOrderRef, {
+                customText: submissionText,
+                printText: submissionText,
+                fontKey: orderDraft.fontKey,
+                fontName: orderDraft.fontName
+              });
+            }
+            return existingOrder.sequenceId;
+          }
 
           // 全站共用同一個原子發號機：不同場次同時送單也不會產生重複序號。
           const counterRef = doc(db, 'artifacts', appId, 'public', 'data', 'system', 'counter');
@@ -1927,7 +1980,8 @@
             phone: orderDraft.phone,
             gift: orderDraft.gift,
             designImage: orderDraft.designImage,
-            customText: orderDraft.text,
+            customText: submissionText,
+            printText: submissionText,
             fontKey: orderDraft.fontKey,
             fontName: orderDraft.fontName,
             venueCode,
@@ -1989,13 +2043,13 @@
           <div class="p-5 space-y-4 text-base">
             <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">選擇圖案</span><span class="font-medium text-white">${order.gift || '未紀錄'}</span></div>
             <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">印製文字</span><span id="statusOrderText" class="font-bold text-white drop-shadow-sm"></span></div>
-            <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">英文字體</span><span class="text-white/90">${order.customText ? (order.fontName || '未紀錄') : '不適用'}</span></div>
+            <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">英文字體</span><span class="text-white/90">${getOrderPrintText(order) ? (order.fontName || '未紀錄') : '不適用'}</span></div>
             <div class="flex justify-between border-b border-white/10 pb-3"><span class="text-white/70">聯絡手機</span><span class="text-white/90">${maskedPhone}</span></div>
             <div class="flex justify-between"><span class="text-white/70">建立時間</span><span class="text-white/60">${order.createdAt}</span></div>
           </div>
         `;
         const statusOrderText = document.getElementById('statusOrderText');
-        if (order.customText) renderStyledText(statusOrderText, order.customText, order.fontKey);
+        if (getOrderPrintText(order)) renderStyledText(statusOrderText, getOrderPrintText(order), order.fontKey);
         else statusOrderText.textContent = '不加文字';
         resultCard.classList.remove('hidden-view'); lucide.createIcons();
       } else {
@@ -2007,7 +2061,7 @@
     window.handleExportCSV = () => {
       if(orders.length === 0) { showModal('無法匯出', '目前沒有訂單。'); return; }
       const headers = ["序號", "場次", "場次代碼", "手機號碼", "選擇圖案", "圖案網址", "印製文字", "英文字體", "狀態", "備註", "建立時間"];
-      const rows = orders.map(order => [order.sequenceId, getOrderVenue(order)?.name || order.venueName || '未分類', getOrderVenueCode(order) || '', order.phone, order.gift || '', order.designImage || '', order.customText || '不加文字', order.customText ? (order.fontName || '未紀錄') : '不適用', order.status, order.note || '', order.createdAt]);
+      const rows = orders.map(order => [order.sequenceId, getOrderVenue(order)?.name || order.venueName || '未分類', getOrderVenueCode(order) || '', order.phone, order.gift || '', order.designImage || '', getOrderPrintText(order) || '不加文字', getOrderPrintText(order) ? (order.fontName || '未紀錄') : '不適用', order.status, order.note || '', order.createdAt]);
       const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(",") + "\n" + rows.map(e => e.map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")).join("\n");
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -2060,11 +2114,12 @@
       }
 
       try {
+        const shouldMirror = isDownloadMirrorEnabled();
         const canvas = await buildPrintCanvas({
           design,
-          text: order.customText || '',
+          text: getOrderPrintText(order),
           fontKey: order.fontKey || 'noto900',
-          mirrored: true
+          mirrored: shouldMirror
         });
         const blob = await canvasToPngBlob(canvas);
         const objectUrl = URL.createObjectURL(blob);
@@ -2123,7 +2178,7 @@
             return String(order.sequenceId || '').toLowerCase().includes(searchTerm)
               || String(order.phone || '').toLowerCase().includes(searchTerm)
               || String(order.gift || '').toLowerCase().includes(searchTerm)
-              || String(order.customText || '').toLowerCase().includes(searchTerm)
+              || getOrderPrintText(order).toLowerCase().includes(searchTerm)
               || String(order.venueName || venue?.name || '').toLowerCase().includes(searchTerm)
               || String(order.venueCode || '').toLowerCase().includes(searchTerm);
           })
@@ -2133,6 +2188,7 @@
         tbody.innerHTML = `<tr><td colSpan="8" class="p-12 text-center text-slate-400 font-medium">目前尚無任何訂單資料，或找不到符合的搜尋結果</td></tr>`; return;
       }
       let html = '';
+      const mirrorDownloads = isDownloadMirrorEnabled();
       filteredOrders.forEach(order => {
         const orderFont = getFontOption(order.fontKey);
         const designThumbnail = getBackendDesignThumbnail(order.gift) || order.designImage || '';
@@ -2157,13 +2213,13 @@
               </div>
             </td>
             <td class="p-5 text-emerald-800">
-              <div id="backendOrderText-${order.id}" class="${order.customText ? orderFont.className : ''} font-bold text-lg"></div>
-              <div class="text-xs text-slate-400 mt-1 not-italic">${order.customText ? (order.fontName || '未紀錄') : '字體不適用'}</div>
+              <div id="backendOrderText-${order.id}" class="${getOrderPrintText(order) ? orderFont.className : ''} font-bold text-lg"></div>
+              <div class="text-xs text-slate-400 mt-1 not-italic">${getOrderPrintText(order) ? (order.fontName || '未紀錄') : '字體不適用'}</div>
             </td>
             <td class="p-5"><select onchange="changeOrderStatus('${order.id}', this.value)" class="${selectClass}" style="background-image: url('data:image/svg+xml,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'none\\' viewBox=\\'0 0 20 20\\'%3e%3cpath stroke=\\'%236b7280\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M6 8l4 4 4-4\\'/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"><option value="處理中" ${order.status === '處理中' ? 'selected' : ''}>處理中</option><option value="完成" ${order.status === '完成' ? 'selected' : ''}>完成</option><option value="取消" ${order.status === '取消' ? 'selected' : ''}>取消 (解鎖)</option></select></td>
             <td class="p-5">
               <button type="button" onclick="downloadPrintFile('${order.id}', this)" class="inline-flex items-center justify-center gap-2 whitespace-nowrap px-4 py-2.5 rounded-xl bg-slate-800 text-white text-sm font-bold shadow-sm hover:bg-slate-900 disabled:opacity-60 disabled:cursor-wait transition">
-                <i data-lucide="download" class="w-4 h-4"></i>下載反轉圖
+                <i data-lucide="download" class="w-4 h-4"></i>${mirrorDownloads ? '下載反轉圖' : '下載原圖'}
               </button>
               <div class="text-[11px] text-slate-400 mt-1.5 whitespace-nowrap">高清透明 PNG</div>
             </td>
@@ -2173,7 +2229,7 @@
       tbody.innerHTML = html;
       filteredOrders.forEach(order => {
         const textElement = document.getElementById(`backendOrderText-${order.id}`);
-        if (order.customText) renderStyledText(textElement, order.customText, order.fontKey);
+        if (getOrderPrintText(order)) renderStyledText(textElement, getOrderPrintText(order), order.fontKey);
         else if (textElement) textElement.textContent = '不加文字';
       });
       lucide.createIcons();
